@@ -1,0 +1,36 @@
+{
+  "name": "venejobs-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "set NODE_ENV=production&& node server.js",
+    "dev": "set NODE_ENV=development&& nodemon server.js",
+    "test": "set NODE_ENV=test&& node server.js",
+    "test:dev": "set NODE_ENV=test&& nodemon server.js",
+    "init-db": "node scripts/init-db.js",
+    "init-db:dev": "set NODE_ENV=development&& node scripts/init-db.js development",
+    "init-db:prod": "set NODE_ENV=production&& node scripts/init-db.js production",
+    "init-db:test": "set NODE_ENV=test&& node scripts/init-db.js test",
+    "dev-setup": "npm run init-db:dev && npm run dev",
+    "prod-setup": "npm run init-db:prod && npm start",
+    "test-setup": "npm run init-db:test && npm run test:dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-validator": "^7.3.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.1",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
