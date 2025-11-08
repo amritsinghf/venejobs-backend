@@ -1,44 +1,53 @@
 const User = require('../models/User');
+const Role = require('../models/Role');
+
 const { hashPassword, comparePassword, generateToken } = require('../utils/helpers');
 
 const authController = {
-  /**
-   * User Signup
-   * Creates a new user account and returns a JWT token for automatic login
-   */
   signup: async (req, res) => {
     try {
-      const { name, email, password } = req.body;
+      const { name, email, password, role } = req.body;
 
-      console.log('📝 Signup attempt for:', email);
+      if (!email || !password || !name || !role) {
+        return res.status(400).json({
+          success: false,
+          message: 'All fields (name, email, password, role) are required',
+          code: 'MISSING_FIELDS',
+        });
+      }
 
-      // Check if user already exists
-      const existingUser = await User.findByEmail(email);
+      const existingUser = await User.findByEmail(email.toLowerCase().trim());
       if (existingUser) {
         return res.status(409).json({
           success: false,
           message: 'User already exists with this email address',
-          code: 'USER_EXISTS'
+          code: 'USER_EXISTS',
+          errors: [{ field: 'email', message: 'Email already registered' }]
         });
       }
 
-      // Hash password before saving
       const hashedPassword = await hashPassword(password);
 
-      // Create user in database
+      const selectedRole = await Role.findByName(role.toLowerCase().trim());
+      if (!selectedRole) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid role: ${role}`,
+          code: 'INVALID_ROLE',
+          errors: [{ field: 'role', message: 'Role not found in system' }]
+        });
+      }
+
       const user = await User.create({
         name: name.trim(),
         email: email.toLowerCase().trim(),
-        password: hashedPassword
+        password: hashedPassword,
+        role_id: selectedRole.id
       });
 
-      console.log('✅ User created successfully:', user.email);
-
-      // Generate JWT token
       const token = generateToken(user.id);
 
-      // Send response
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
         message: 'Account created successfully! Welcome to Venejob.',
         data: {
@@ -46,35 +55,30 @@ const authController = {
             id: user.id,
             name: user.name,
             email: user.email,
-            role: user.role,
+            role: selectedRole.name,
             is_verified: user.is_verified,
             created_at: user.created_at
           },
-          token: token
+          token
         }
       });
 
     } catch (error) {
       console.error('🚨 Signup error:', error);
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Unable to create account at this time',
         code: 'SIGNUP_ERROR',
-        ...(process.env.NODE_ENV === 'development' && { error: error.message })
+        errors: [{ message: error.message }]
       });
     }
   },
 
-  /**
-   * User Login
-   * Authenticates user credentials and returns a JWT token
-   */
   login: async (req, res) => {
     try {
       const { email, password } = req.body;
 
-      // Validate input
       if (!email || !password) {
         return res.status(400).json({
           success: false,
@@ -83,7 +87,6 @@ const authController = {
         });
       }
 
-      // Find user by email
       const user = await User.findByEmail(email.toLowerCase());
       if (!user) {
         return res.status(401).json({
@@ -93,7 +96,6 @@ const authController = {
         });
       }
 
-      // Verify password
       const isPasswordValid = await comparePassword(password, user.password);
       if (!isPasswordValid) {
         return res.status(401).json({
@@ -103,10 +105,8 @@ const authController = {
         });
       }
 
-      // Generate JWT token
       const token = generateToken(user.id);
 
-      // Send response
       res.json({
         success: true,
         message: 'Login successful! Welcome back.',
@@ -135,11 +135,6 @@ const authController = {
     }
   },
 
-  /**
-   * Get User Profile
-   * Returns profile data of the authenticated user
-   * Assumes `authenticateToken` middleware attaches user info to `req.user`
-   */
   getProfile: async (req, res) => {
     try {
       res.json({
@@ -158,11 +153,6 @@ const authController = {
     }
   },
 
-  /**
-   * Verify Account
-   * Placeholder endpoint for email/account verification
-   * Future implementation will verify user via token
-   */
   verifyAccount: async (req, res) => {
     try {
       res.json({
@@ -170,7 +160,6 @@ const authController = {
         message: 'Account verification endpoint - to be implemented'
       });
     } catch (error) {
-      console.error('🚨 Verification error:', error);
       res.status(500).json({
         success: false,
         message: 'Verification failed'

@@ -1,19 +1,10 @@
-/**
- * Authentication Middleware for Venejob
- * Protects routes by verifying JWT tokens
- */
-
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const dotenv = require('dotenv');
+dotenv.config();
 
-/**
- * Verify JWT Token Middleware
- * Extracts and validates JWT from Authorization header
- * Attaches user object to request if valid
- */
 const authenticateToken = async (req, res, next) => {
   try {
-    // Get token from Authorization header
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
@@ -25,12 +16,9 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
-    // Verify JWT token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    // Find user by ID from token
     const user = await User.findById(decoded.userId);
-    
+
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -39,7 +27,6 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
-    // Attach user to request object
     req.user = user;
     next();
 
@@ -70,11 +57,6 @@ const authenticateToken = async (req, res, next) => {
   }
 };
 
-/**
- * Optional Authentication Middleware
- * Similar to authenticateToken but doesn't block if no token provided
- * Useful for optional authentication scenarios
- */
 const optionalAuth = async (req, res, next) => {
   try {
     const authHeader = req.headers['authorization'];
@@ -83,7 +65,7 @@ const optionalAuth = async (req, res, next) => {
     if (token) {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const user = await User.findById(decoded.userId);
-      
+
       if (user) {
         req.user = user;
       }
@@ -91,7 +73,6 @@ const optionalAuth = async (req, res, next) => {
 
     next();
   } catch (error) {
-    // Continue without authentication if token is invalid
     next();
   }
 };

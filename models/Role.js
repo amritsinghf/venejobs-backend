@@ -1,4 +1,3 @@
-// models/Role.js
 const db = require('../config/database');
 const { getCurrentEnvironment } = require('../config/environments');
 
@@ -38,7 +37,6 @@ class Role {
         [role.name, role.description]
       );
     }
-    console.log('✅ Default roles seeded successfully');
   }
 
   static async findByName(name) {
