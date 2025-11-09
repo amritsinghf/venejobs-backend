@@ -12,6 +12,6 @@ router.post('/login', authController.login);
 
 router.get('/profile', authenticateToken, authController.getProfile);
 
-router.get('/verify', authController.verifyAccount);
-
+router.post('/verify-email', authController.verifyEmail);
+router.post('/resend-verification', authController.resendVerification);
 module.exports = router;
