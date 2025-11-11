@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { sendVerificationEmail } = require('../utils/emailService');
+const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/emailService');
 const { hashPassword, comparePassword, generateToken } = require('../utils/helpers');
 const { findUserByEmail, createUser, updateUser } = require('./userService');
 const Role = require('../models/Role');
@@ -123,9 +123,27 @@ async function resendVerificationEmail(email) {
     await sendVerificationEmail(user.email, verificationCode, user.name || 'User');
 }
 
+async function forgotPassword(email) {
+    const user = await findUserByEmail(email.toLowerCase().trim());
+    if (!user) throw new Error('USER_NOT_FOUND');
+
+    const resetCode = crypto.randomInt(100000, 999999).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    await updateUser(user.id, {
+        password_reset_code: resetCode,
+        password_reset_expires_at: expiresAt
+    });
+
+    await sendPasswordResetEmail(user.email, resetCode, user.name || 'User');
+
+    return { message: 'Password reset code sent to your email.' };
+}
+
 module.exports = {
     signupUser,
     loginUser,
     verifyEmailCode,
-    resendVerificationEmail
+    resendVerificationEmail,
+    forgotPassword
 };

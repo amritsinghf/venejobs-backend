@@ -2,7 +2,8 @@ const {
   signupUser,
   loginUser,
   verifyEmailCode,
-  resendVerificationEmail
+  resendVerificationEmail,
+  forgotPassword
 } = require('../services/authService');
 
 const { isRateLimited } = require('../utils/rateLimiter');
@@ -113,6 +114,37 @@ const authController = {
         success: false,
         message: 'Unable to fetch profile',
         code: 'PROFILE_ERROR'
+      });
+    }
+  },
+  forgotPassword: async (req, res) => {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email is required'
+        });
+      }
+
+      const response = await forgotPassword(email);
+      res.status(200).json({ success: true, message: response.message });
+    } catch (error) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  },
+
+  logout: async (req, res) => {
+    try {
+      res.status(200).json({
+        success: true,
+        message: 'Logout successful.'
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Logout failed',
+        error: error.message
       });
     }
   }
