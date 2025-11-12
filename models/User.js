@@ -113,6 +113,25 @@ class User {
             return;
         }
 
+        static async syncColumns() {
+         const alterQueries = [
+            `ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture VARCHAR(255);`,
+            `ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP;`,
+`ALTER TABLE users ADD COLUMN IF NOT EXISTS username TIMESTAMP;`,
+            // Add more columns here if needed
+        ];
+
+        for (const query of alterQueries) {
+            try {
+                await db.query(query);
+            } catch (error) {
+                console.error('Error syncing column:', error.message);
+            }
+        }
+
+         console.log('Users table synced (new columns ensured)');
+        }
+
         await db.query(
             `INSERT INTO users (name, lastname, age, phone, email, password, role_id)
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
