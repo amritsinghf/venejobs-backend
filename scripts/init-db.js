@@ -1,123 +1,97 @@
-const { Client } = require('pg');
-require('dotenv').config();
+require("dotenv").config();
+const { Client } = require("pg");
+const { execSync } = require("child_process");
 
-async function initializeDatabase(environment = 'development') {
-  console.log(`🚀 Initializing ${environment} database...`);
+async function initializeDatabase(env = "development") {
+  console.log(`Setting up database for: ${env}`);
 
-  const config = getConfig(environment);
-  
+  const config = getConfig(env);
+
   try {
-    // Connect to PostgreSQL default database
+    // Connect to default postgres database
     const client = new Client({
       host: config.db.host,
       port: config.db.port,
       user: config.db.user,
       password: config.db.password,
-      database: 'postgres'
+      database: "postgres",
     });
 
     await client.connect();
-    console.log(`✅ Connected to PostgreSQL as ${config.db.user}`);
 
     // Check if database exists
     const dbCheck = await client.query(
-      'SELECT 1 FROM pg_database WHERE datname = $1',
+      "SELECT 1 FROM pg_database WHERE datname = $1",
       [config.db.database]
     );
 
     if (dbCheck.rows.length === 0) {
       await client.query(`CREATE DATABASE ${config.db.database}`);
-      console.log(`✅ Database '${config.db.database}' created successfully`);
+      console.log(`Database created: ${config.db.database}`);
     } else {
-      console.log(`ℹ️ Database '${config.db.database}' already exists`);
+      console.log(`Database exists: ${config.db.database}`);
     }
 
     await client.end();
 
-    // Now connect to the new database and create tables
-    const dbClient = new Client({
-      host: config.db.host,
-      port: config.db.port,
-      user: config.db.user,
-      password: config.db.password,
-      database: config.db.database
-    });
+    // Run migrations
+    console.log("Running migrations...");
+    execSync(`npx sequelize-cli db:migrate --env ${env}`, { stdio: "inherit" });
 
-    await dbClient.connect();
-    console.log(`✅ Connected to database '${config.db.database}'`);
+    // Run seeders
+    try {
+      console.log("Running seeders...");
+      execSync(`npx sequelize-cli db:seed:all --env ${env}`, {
+        stdio: "inherit",
+      });
+    } catch {
+      console.log("No seeders found.");
+    }
 
-    // Create users table
-    const createTableQuery = `
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(100) NOT NULL,
-        email VARCHAR(255) UNIQUE NOT NULL,
-        password VARCHAR(255) NOT NULL,
-        role VARCHAR(20) DEFAULT 'user',
-        is_verified BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      );
-
-      CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-      CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at);
-    `;
-
-    await dbClient.query(createTableQuery);
-    console.log(`✅ Users table created in '${config.db.database}'`);
-
-    await dbClient.end();
-    console.log(`🎉 ${environment} database setup completed successfully!`);
-
-  } catch (error) {
-    console.error(`❌ ${environment} database initialization failed:`, error.message);
-    console.log('\n💡 Troubleshooting tips:');
-    console.log('1. Make sure PostgreSQL is running');
-    console.log('2. Check your PostgreSQL credentials in .env file');
-    console.log('3. Default PostgreSQL credentials are usually:');
-    console.log('   - Username: postgres');
-    console.log('   - Password: postgres (or your custom password)');
+    console.log(`Database setup completed for: ${env}`);
+  } catch (err) {
+    console.error("Database setup failed:", err.message);
   }
 }
 
-function getConfig(environment) {
+function getConfig(env) {
   const configs = {
     development: {
       db: {
-        host: process.env.DB_HOST || 'localhost',
-        port: process.env.DB_PORT || 5432,
-        database: process.env.DB_NAME || 'venejob_development',
-        user: process.env.DB_USER || 'postgres',
-        password: process.env.DB_PASSWORD || 'postgres'
-      }
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT,
+        database: process.env.DB_NAME,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+      },
     },
     production: {
       db: {
-        host: process.env.PROD_DB_HOST || 'localhost',
-        port: process.env.PROD_DB_PORT || 5432,
-        database: process.env.PROD_DB_NAME || 'venejob_production',
-        user: process.env.PROD_DB_USER || 'postgres',
-        password: process.env.PROD_DB_PASSWORD || 'postgres'
-      }
+        host: process.env.PROD_DB_HOST,
+        port: process.env.PROD_DB_PORT,
+        database: process.env.PROD_DB_NAME,
+        user: process.env.PROD_DB_USER,
+        password: process.env.PROD_DB_PASSWORD,
+      },
     },
     test: {
       db: {
-        host: process.env.TEST_DB_HOST || 'localhost',
-        port: process.env.TEST_DB_PORT || 5432,
-        database: process.env.TEST_DB_NAME || 'venejob_test',
-        user: process.env.TEST_DB_USER || 'postgres',
-        password: process.env.TEST_DB_PASSWORD || 'postgres'
-      }
-    }
+        host: process.env.TEST_DB_HOST,
+        port: process.env.TEST_DB_PORT,
+        database: process.env.TEST_DB_NAME,
+        user: process.env.TEST_DB_USER,
+        password: process.env.TEST_DB_PASSWORD,
+      },
+    },
   };
 
-  return configs[environment] || configs.development;
+  return configs[env];
 }
 
-// Run initialization if script is executed directly
+// CLI support
 if (require.main === module) {
-  const environment = process.argv[2] || 'development';
-  initializeDatabase(environment);
+  const env = process.argv[2] || "development";
+  initializeDatabase(env);
 }
 
 module.exports = initializeDatabase;

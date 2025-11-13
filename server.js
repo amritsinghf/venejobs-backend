@@ -1,82 +1,96 @@
-// app.js or server.js
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-require('dotenv').config();
+const express = require("express");
+const cors = require("cors");
+const helmet = require("helmet");
+const morgan = require("morgan");
+require("dotenv").config();
 
-
-
-const { getCurrentEnvironment, getEnvironmentConfig } = require('./config/environments');
-const authRoutes = require('./routes/authRoutes');
-const User = require('./models/User');
-const Role = require('./models/Role');
+const { sequelize } = require("./models");
+const authRoutes = require("./routes/authRoutes");
+const { getCurrentEnvironment, getEnvironmentConfig } = require("./config/environments");
+const createOrUpdateAdmin = require("./utils/createAdmin");
 
 const app = express();
 const config = getEnvironmentConfig();
 const PORT = config.app.port;
 
-// ---------------------------
-// Middleware
-// ---------------------------
+// Basic middlewares
 app.use(helmet());
-app.use(cors({
-    origin: getCurrentEnvironment() === 'production'
-        ? ['https://venejob.com', 'https://www.venejob.com', 'https://app.venejob.com']
-        : ['http://localhost:3000', 'http://localhost:5173'],
-    credentials: true
-}));
+app.use(
+    cors({
+        origin:
+            getCurrentEnvironment() === "production"
+                ? ["https://venejob.com", "https://www.venejob.com", "https://app.venejob.com"]
+                : ["http://localhost:3000", "http://localhost:5173"],
+        credentials: true,
+    })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(morgan(getCurrentEnvironment() === "development" ? "dev" : "combined"));
 
-app.use(morgan(getCurrentEnvironment() === 'development' ? 'dev' : 'combined'));
-
-// ---------------------------
 // Routes
-// ---------------------------
-app.use('/api/auth', authRoutes);
+app.use("/api/auth", authRoutes);
 
-app.get('/', (req, res) => {
+// Default route
+app.get("/", (req, res) => {
     res.json({
         success: true,
-        message: 'Welcome to Venejob Backend API',
-        version: '1.0.0',
-        status: 'operational'
+        message: "Welcome to Venejob Backend API",
+        version: "1.0.0",
+        status: "operational",
     });
 });
 
-// ---------------------------
-// Initialize DB + Admin User
-// ---------------------------
+// App start + DB setup
 (async () => {
     try {
-        // 1️⃣ Ensure roles table + default roles
-        await Role.createTable();
-        await Role.seedRoles();
+        await sequelize.authenticate();
+        console.log("Database connected");
 
-        // 2️⃣ Ensure users table exists
-        await User.createTable();
+        const env = getCurrentEnvironment();
 
-        // 3️⃣ Sync any new columns in users table
-        await User.syncColumns();
+        if (env === "development") {
+            console.log("🔧 Running migrations (dev only)...");
+            const { execSync } = require("child_process");
+            execSync("npx sequelize-cli db:migrate", { stdio: "inherit" });
+            execSync("npx sequelize-cli db:seed:all", { stdio: "inherit" });
+        }
 
-        // 4️⃣ Create or update admin user automatically
-        await User.createOrUpdateAdmin();
+        if (env === "test") {
+            console.log("🧪 Test env → resetting DB...");
+            const { execSync } = require("child_process");
+            execSync("npx sequelize-cli db:migrate:undo:all", { stdio: "inherit" });
+            execSync("npx sequelize-cli db:migrate", { stdio: "inherit" });
+            execSync("npx sequelize-cli db:seed:all", { stdio: "inherit" });
+        }
 
-        // 5️⃣ Start the server
+        if (env === "production") {
+            console.log(`
+⚠️ PRODUCTION MODE:
+----------------------------------------
+❌ Auto migrations disabled 
+✔ Run migrations manually using:
+   npx sequelize-cli db:migrate
+----------------------------------------
+`);
+        }
+
+        await createOrUpdateAdmin();
+
         app.listen(PORT, () => {
             console.log(`
-✅ Venejob Backend Running
----------------------------
-🌍 Env: ${getCurrentEnvironment()}
-🚀 URL: http://localhost:${PORT}
-🗄️  DB: ${config.db.database}
-📊 Version: 1.0.0
+============================================
+        ✅ Venejob Backend Server Running
+--------------------------------------------
+🌍 Environment : ${getCurrentEnvironment()}
+🚀 URL         : http://localhost:${PORT}
+🗄️ Database    : ${config.db.database}
+============================================
 `);
         });
-    } catch (error) {
-        console.error('❌ Initialization failed:', error);
+
+    } catch (err) {
+        console.error("Startup error:", err);
         process.exit(1);
     }
 })();
-
