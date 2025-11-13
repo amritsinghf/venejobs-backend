@@ -180,9 +180,9 @@ const authController = {
 
   resetPassword: async (req, res) => {
   try {
-    const { email, code, newPassword } = req.body;
+    const { email, newPassword } = req.body;
 
-    if (!email || !code || !newPassword) {
+    if (!email || !newPassword) {
       return res.status(400).json({
         success: false,
         message: 'Email, code, and new password are required'
@@ -191,10 +191,6 @@ const authController = {
 
     const user = await findUserByEmail(email.toLowerCase().trim());
     if (!user) throw new Error('USER_NOT_FOUND');
-
-    if (user.password_reset_code !== code) {
-      return res.status(400).json({ success: false, message: 'Invalid reset code' });
-    }
 
     if (new Date() > new Date(user.password_reset_expires_at)) {
       return res.status(400).json({ success: false, message: 'Reset code expired' });
