@@ -1,80 +1,133 @@
 const { Job } = require("../models");
+const JOB_MESSAGES = require("../constants/jobMessages");
 
-class JobService {
 
-    static validateBusinessRules(data) {
+function validateBusinessRules(data) {
 
-        if (!Array.isArray(data.skills)) {
-            throw new Error("Skills must be an array.");
-        }
-
-        if (data.skills.length === 0) {
-            throw new Error("Please select at least 1 skill.");
-        }
-
-        if (data.skills.length > 15) {
-            throw new Error("You can select a maximum of 15 skills.");
-        }
-
-        if (!["hourly", "fixed", "monthly"].includes(data.budget_type)) {
-            throw new Error("Budget type must be hourly, fixed, or monthly.");
-        }
-
-        if (!data.budget_amount || data.budget_amount < 1) {
-            throw new Error("Budget amount must be greater than 0.");
-        }
-
-        if (data.budget_type === "hourly" && data.budget_amount < 5) {
-            throw new Error("Hourly rate must be at least $5.");
-        }
-
-        if (data.budget_type === "monthly" && data.budget_amount < 300) {
-            throw new Error("Monthly rate must be at least $300.");
-        }
-
-        if (!["Small", "Medium", "Large"].includes(data.project_size)) {
-            throw new Error("Invalid project size.");
-        }
-
-        if (data.project_size === "Large" && data.duration === "1–2 Days") {
-            throw new Error("Large projects cannot be 1–2 days.");
-        }
-
-        const validDurations = [
-            "1_2_days",
-            "1_4_weeks",
-            "1_3_months",
-            "3_6_months",
-            "ongoing"
-        ];
-
-        if (!validDurations.includes(data.duration)) {
-            throw new Error("Invalid project duration.");
-        }
-
-        if (!["Entry", "Intermediate", "Expert"].includes(data.experience_level)) {
-            throw new Error("Invalid experience level.");
-        }
-
-        if (data.title.trim().length < 5) {
-            throw new Error("Job title must be at least 5 characters.");
-        }
-
-        if (data.description.trim().length < 20) {
-            throw new Error("Description must be at least 20 characters.");
-        }
+    if (!Array.isArray(data.skills)) {
+        throw new Error(JOB_MESSAGES.SKILLS_NOT_ARRAY);
     }
 
-    // CREATE JOB
-    static async createJob(userId, data) {
-        this.validateBusinessRules(data);
+    if (data.skills.length === 0) {
+        throw new Error(JOB_MESSAGES.SKILLS_EMPTY);
+    }
 
-        return await Job.create({
-            client_id: userId,
-            status: "published",
-            ...data
-        });
+    if (data.skills.length > 15) {
+        throw new Error(JOB_MESSAGES.SKILLS_TOO_MANY);
+    }
+
+    if (!["hourly", "fixed", "monthly"].includes(data.budget_type)) {
+        throw new Error(JOB_MESSAGES.INVALID_BUDGET_TYPE);
+    }
+
+    if (!data.budget_amount || data.budget_amount < 1) {
+        throw new Error(JOB_MESSAGES.INVALID_BUDGET_AMOUNT);
+    }
+
+    if (data.budget_type === "hourly" && data.budget_amount < 5) {
+        throw new Error(JOB_MESSAGES.HOURLY_MINIMUM);
+    }
+
+    if (data.budget_type === "monthly" && data.budget_amount < 300) {
+        throw new Error(JOB_MESSAGES.MONTHLY_MINIMUM);
+    }
+
+    const validSizes = ["small", "medium", "large"];
+    if (!validSizes.includes(data.project_size)) {
+        throw new Error(JOB_MESSAGES.INVALID_PROJECT_SIZE);
+    }
+
+    if (data.project_size === "large" && data.duration === "1_2_days") {
+        throw new Error(JOB_MESSAGES.LARGE_PROJECT_SHORT_DURATION);
+    }
+
+    const validDurations = [
+        "1_2_days",
+        "1_4_weeks",
+        "1_3_months",
+        "3_6_months",
+        "ongoing"
+    ];
+
+    if (!validDurations.includes(data.duration)) {
+        throw new Error(JOB_MESSAGES.INVALID_DURATION);
+    }
+
+    const validExperience = ["entry", "intermediate", "expert"];
+    if (!validExperience.includes(data.experience_level)) {
+        throw new Error(JOB_MESSAGES.INVALID_EXPERIENCE);
+    }
+
+    if (data.title.trim().length < 5) {
+        throw new Error(JOB_MESSAGES.TITLE_TOO_SHORT);
+    }
+
+    if (data.description.trim().length < 20) {
+        throw new Error(JOB_MESSAGES.DESCRIPTION_TOO_SHORT);
     }
 }
 
-module.exports = JobService;
+
+async function createJob(userId, data) {
+
+    validateBusinessRules(data);
+
+    delete data.status;
+    delete data.is_active;
+
+    const job = await Job.create({
+        client_id: userId,
+        status: "published",
+        is_active: true,
+        ...data
+    });
+
+    return job;
+}
+
+async function updateJobStatus(jobId, status, userId) {
+
+    const allowedStatuses = ["draft", "published", "paused", "closed"];
+
+    if (!allowedStatuses.includes(status)) {
+        throw new Error(JOB_MESSAGES.INVALID_STATUS);
+    }
+
+    const job = await Job.findOne({
+        where: { id: jobId, client_id: userId }
+    });
+
+    if (!job) {
+        throw new Error(JOB_MESSAGES.NOT_FOUND_OR_UNAUTHORIZED);
+    }
+
+    job.status = status;
+    await job.save();
+
+    return job;
+}
+async function updateActiveStatus(jobId, is_active, userId) {
+
+    if (typeof is_active !== "boolean") {
+        throw new Error(JOB_MESSAGES.ACTIVE_BOOL_ONLY);
+    }
+
+    const job = await Job.findOne({
+        where: { id: jobId, client_id: userId }
+    });
+
+    if (!job) {
+        throw new Error(JOB_MESSAGES.NOT_FOUND_OR_UNAUTHORIZED);
+    }
+
+    job.is_active = is_active;
+    await job.save();
+
+    return job;
+}
+
+module.exports = {
+    createJob,
+    updateJobStatus,
+    updateActiveStatus
+};

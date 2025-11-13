@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { JWT_SECRET, JWT_EXPIRES_IN } from '../config/constants.js';
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const hashPassword = async (password) => {
   const saltRounds = 10;
@@ -12,5 +13,5 @@ export const comparePassword = async (password, hashedPassword) => {
 };
 
 export const generateToken = (userId) => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
 };
