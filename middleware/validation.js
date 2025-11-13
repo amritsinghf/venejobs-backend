@@ -15,11 +15,12 @@ const validateSignup = [
     .withMessage('Email must not exceed 255 characters'),
 
   body('password')
-    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters long')
-    .matches(/[A-Z]/).withMessage('Password must contain at least one uppercase letter')
-    .matches(/[a-z]/).withMessage('Password must contain at least one lowercase letter')
-    .matches(/\d/).withMessage('Password must contain at least one number')
-    .matches(/[!@#$%^&*(),.?":{}|<>]/).withMessage('Password must contain at least one special character'),
+    .isLength({ min: 8 }).withMessage('Must be at least 8 characters')
+    .matches(/[A-Z]/).withMessage('Need 1 uppercase letter')
+    .matches(/[a-z]/).withMessage('Need 1 lowercase letter')
+    .matches(/\d/).withMessage('Need 1 number')
+    .matches(/[!@#$%^&*(),.?":{}|<>]/).withMessage('Need 1 special character'),
+
 
   (req, res, next) => {
     const errors = validationResult(req);
@@ -29,7 +30,7 @@ const validateSignup = [
 
       return res.status(400).json({
         success: false,
-        message: combinedMessage 
+        message: combinedMessage
       });
     }
 

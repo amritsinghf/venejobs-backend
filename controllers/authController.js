@@ -21,7 +21,7 @@ const authController = {
       const messages = {
         USER_EXISTS: 'User already exists with this email.',
         INVALID_ROLE: 'Invalid role provided.',
-        MISSING_FIELDS: 'All fields (name, email, password, role) are required.'
+        MISSING_FIELDS: 'All fields (name, email, password, username, role) are required.'
       };
       res.status(400).json({
         success: false,

@@ -4,8 +4,8 @@ const { hashPassword, comparePassword, generateToken } = require('../utils/helpe
 const { findUserByEmail, createUser, updateUser } = require('./userService');
 const Role = require('../models/Role');
 
-async function signupUser({ name, email, password, role }) {
-    if (!name || !email || !password || !role) throw new Error('MISSING_FIELDS');
+async function signupUser({ name, email, password, role, username }) {
+    if (!name || !email || !password || !role || !username) throw new Error('MISSING_FIELDS');
 
     const normalizedEmail = email.toLowerCase().trim();
     const existingUser = await findUserByEmail(normalizedEmail);
