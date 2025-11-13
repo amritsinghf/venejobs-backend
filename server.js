@@ -6,6 +6,11 @@ require("dotenv").config();
 
 const { sequelize } = require("./models");
 const authRoutes = require("./routes/authRoutes");
+const jobRoutes = require("./routes/job.routes");
+const lookupRoutes = require("./routes/lookup.routes");
+const projectOptionsRoutes = require("./routes/projectOptions.routes");
+const budgetRoutes = require("./routes/budgetOptions.routes");
+
 const { getCurrentEnvironment, getEnvironmentConfig } = require("./config/environments");
 const createOrUpdateAdmin = require("./utils/createAdmin");
 
@@ -30,6 +35,10 @@ app.use(morgan(getCurrentEnvironment() === "development" ? "dev" : "combined"));
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/jobs", jobRoutes);
+app.use("/api/lookup", lookupRoutes);
+app.use("/api/lookup/project-options", projectOptionsRoutes);
+app.use("/api/lookup/budget-options", budgetRoutes);
 
 // Default route
 app.get("/", (req, res) => {

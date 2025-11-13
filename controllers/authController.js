@@ -10,7 +10,7 @@ const {
 const { isRateLimited } = require('../utils/rateLimiter');
 const MESSAGES = require("../constants/messages");
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/emailService');
-const User = require('../models/User');
+const { User } = require("../models");
 
 const authController = {
   signup: async (req, res) => {
