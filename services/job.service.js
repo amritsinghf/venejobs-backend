@@ -1,6 +1,6 @@
 const { Job } = require("../models");
 const JOB_MESSAGES = require("../constants/jobMessages");
-
+const { User } = require("../models");
 
 function validateBusinessRules(data) {
 
@@ -126,8 +126,37 @@ async function updateActiveStatus(jobId, is_active, userId) {
     return job;
 }
 
+async function getJobById(jobId) {
+    const job = await Job.findOne({
+        where: { id: jobId },
+        include: [
+            {
+                model: User,
+                as: "client",
+                attributes: ["id", "name", "email"]
+            }
+        ]
+    });
+
+    if (!job) {
+        throw new Error("Job not found");
+    }
+
+    return job;
+}
+async function getJobsByUser(userId) {
+    const jobs = await Job.findAll({
+        where: { client_id: userId },
+        order: [["created_at", "DESC"]]
+    });
+
+    return jobs;
+}
+
 module.exports = {
     createJob,
     updateJobStatus,
-    updateActiveStatus
+    updateActiveStatus,
+    getJobById,
+    getJobsByUser
 };

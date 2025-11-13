@@ -58,5 +58,43 @@ module.exports = {
         } catch (error) {
             res.status(400).json({ success: false, message: error.message });
         }
-    }
+    },
+    getJobDetailsById: async (req, res) => {
+        try {
+            const jobId = req.params.id;
+
+            const job = await JobService.getJobById(jobId);
+
+            return res.status(200).json({
+                success: true,
+                job
+            });
+
+        } catch (error) {
+            return res.status(404).json({
+                success: false,
+                message: error.message
+            });
+        }
+    },
+    getUserJobs: async (req, res) => {
+        try {
+            const userId = req.user.id;
+
+            const jobs = await JobService.getJobsByUser(userId);
+
+            return res.status(200).json({
+                success: true,
+                count: jobs.length,
+                jobs
+            });
+
+        } catch (error) {
+            return res.status(400).json({
+                success: false,
+                message: error.message
+            });
+        }
+    },
+
 };
