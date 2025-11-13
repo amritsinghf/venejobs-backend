@@ -33,7 +33,7 @@ function validateBusinessRules(data) {
     }
 
     const validSizes = ["small", "medium", "large"];
-    if (!validSizes.includes(data.project_size)) {
+    if (!validSizes.includes(data.project_size.toLowerCase().trim())) {
         throw new Error(JOB_MESSAGES.INVALID_PROJECT_SIZE);
     }
 
@@ -54,7 +54,7 @@ function validateBusinessRules(data) {
     }
 
     const validExperience = ["entry", "intermediate", "expert"];
-    if (!validExperience.includes(data.experience_level)) {
+    if (!validExperience.includes(data.experience_level.toLowerCase().trim())) {
         throw new Error(JOB_MESSAGES.INVALID_EXPERIENCE);
     }
 

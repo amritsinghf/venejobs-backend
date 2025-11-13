@@ -32,6 +32,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan(getCurrentEnvironment() === "development" ? "dev" : "combined"));
+app.use('/uploads', express.static('uploads'));
 
 // Routes
 app.use("/api/auth", authRoutes);

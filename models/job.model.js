@@ -17,11 +17,20 @@ module.exports = (sequelize, DataTypes) => {
             description: DataTypes.TEXT,
             category: DataTypes.STRING,
             skills: DataTypes.ARRAY(DataTypes.STRING),
-            project_size: DataTypes.STRING,
+            project_size: {
+                type: DataTypes.ENUM("Small", "Medium", "Large"),
+                allowNull: false
+            },
             duration: DataTypes.STRING,
-            experience_level: DataTypes.STRING,
+            experience_level: {
+                type: DataTypes.ENUM("Entry", "Intermediate", "Expert"),
+                allowNull: false
+            },
 
-            budget_type: DataTypes.STRING,
+            budget_type: {
+                type: DataTypes.ENUM("hourly", "fixed", "monthly"),
+                allowNull: false
+            },
             budget_amount: DataTypes.FLOAT,
 
             status: {
@@ -34,7 +43,10 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.BOOLEAN,
                 defaultValue: true
             },
-
+            attachment: {
+                type: String,
+                default: null
+            },
             client_id: DataTypes.INTEGER
         },
         {

@@ -6,7 +6,12 @@ module.exports = {
             const userId = req.user.id;
             const payload = req.body;
 
-            const job = await JobService.createJob(userId, payload);
+            const attachmentUrl = req.file ? `/uploads/${req.file.filename}` : null;
+
+            const job = await JobService.createJob(userId, {
+                ...payload,
+                attachment: attachmentUrl
+            });
 
             res.status(201).json({
                 success: true,
