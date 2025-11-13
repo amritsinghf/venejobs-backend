@@ -5,6 +5,8 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 require('dotenv').config();
 
+
+
 const { getCurrentEnvironment, getEnvironmentConfig } = require('./config/environments');
 const authRoutes = require('./routes/authRoutes');
 const User = require('./models/User');
@@ -25,6 +27,8 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use(morgan(getCurrentEnvironment() === 'development' ? 'dev' : 'combined'));
 
 // ---------------------------
