@@ -147,6 +147,73 @@ const authController = {
         error: error.message
       });
     }
+  },
+
+  verifyResetCode: async (req, res) => {
+  try {
+    const { email, code } = req.body;
+
+    if (!email || !code) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and code are required'
+      });
+    }
+
+    const user = await findUserByEmail(email.toLowerCase().trim());
+    if (!user) throw new Error('USER_NOT_FOUND');
+
+    if (user.password_reset_code !== code) {
+      return res.status(400).json({ success: false, message: 'Invalid reset code' });
+    }
+
+    if (new Date() > new Date(user.password_reset_expires_at)) {
+      return res.status(400).json({ success: false, message: 'Reset code expired' });
+    }
+
+    return res.status(200).json({ success: true, message: 'Code verified successfully' });
+
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+  },
+
+  resetPassword: async (req, res) => {
+  try {
+    const { email, code, newPassword } = req.body;
+
+    if (!email || !code || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email, code, and new password are required'
+      });
+    }
+
+    const user = await findUserByEmail(email.toLowerCase().trim());
+    if (!user) throw new Error('USER_NOT_FOUND');
+
+    if (user.password_reset_code !== code) {
+      return res.status(400).json({ success: false, message: 'Invalid reset code' });
+    }
+
+    if (new Date() > new Date(user.password_reset_expires_at)) {
+      return res.status(400).json({ success: false, message: 'Reset code expired' });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await updateUser(user.id, {
+      password: hashedPassword,
+      password_reset_code: null,
+      password_reset_expires_at: null
+    });
+
+    return res.status(200).json({ success: true, message: 'Password reset successful!' });
+
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
   }
 };
 
