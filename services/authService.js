@@ -21,6 +21,7 @@ async function signupUser({ name, email, password, role, username }) {
     const user = await createUser({
         name: name.trim(),
         email: normalizedEmail,
+        username: username,
         password: hashedPassword,
         role_id: selectedRole.id,
         email_verification_code: verificationCode,
@@ -33,6 +34,7 @@ async function signupUser({ name, email, password, role, username }) {
         id: user.id,
         name: user.name,
         email: user.email,
+        username: user.username,
         role: selectedRole.name,
         is_verified: user.is_email_verified,
         created_at: user.created_at
