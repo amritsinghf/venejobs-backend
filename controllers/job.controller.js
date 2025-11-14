@@ -96,5 +96,32 @@ module.exports = {
             });
         }
     },
+    updateJob: async (req, res) => {
+        try {
+            const jobId = req.params.id;
+            const userId = req.user.id;
 
+            let payload = req.body;
+
+            // if new file uploaded
+            const attachmentUrl = req.file ? `/uploads/${req.file.filename}` : null;
+            if (attachmentUrl) {
+                payload.attachment = attachmentUrl;
+            }
+
+            const updatedJob = await JobService.updateJob(jobId, userId, payload);
+
+            return res.status(200).json({
+                success: true,
+                message: "Job updated successfully",
+                job: updatedJob
+            });
+
+        } catch (error) {
+            return res.status(400).json({
+                success: false,
+                message: error.message
+            });
+        }
+    },
 };

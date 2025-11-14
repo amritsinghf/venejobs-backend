@@ -152,11 +152,22 @@ async function getJobsByUser(userId) {
 
     return jobs;
 }
+async function updateJob(jobId, userId, payload) {
+    const job = await Job.findOne({ where: { id: jobId, client_id: userId } });
+
+    if (!job) {
+        throw new Error("Job not found or you are not authorized to update this job.");
+    }
+
+    await job.update(payload);
+    return job;
+}
 
 module.exports = {
     createJob,
     updateJobStatus,
     updateActiveStatus,
     getJobById,
-    getJobsByUser
+    getJobsByUser,
+    updateJob
 };

@@ -11,6 +11,13 @@ router.post(
     createJobValidator,
     JobController.createJob
 );
+router.put(
+    "/:id",
+    authenticateToken,
+    upload.single("attachment"),
+    createJobValidator,
+    JobController.updateJob
+);
 router.patch("/:id/status", authenticateToken, JobController.updateStatus);
 router.patch("/:id/active", authenticateToken, JobController.updateActive);
 router.get(
