@@ -6,9 +6,9 @@ const {
   forgotPassword,
   verifyResetCodeService,
   resetPasswordService
-} = require('../services/authService');
+} = require('../services/auth.service');
 const { isRateLimited } = require('../utils/rateLimiter');
-const MESSAGES = require("../constants/messages");
+const AUTH_MESSAGES = require("../commonMessages/authMessages");
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/emailService');
 const { User } = require("../models");
 
@@ -19,7 +19,7 @@ const authController = {
 
       res.status(201).json({
         success: true,
-        message: MESSAGES.CODE_SENT,
+        message: AUTH_MESSAGES.CODE_SENT,
         data: { user }
       });
 
@@ -46,15 +46,15 @@ const authController = {
       console.log("SIGNUP ERROR DETAILS:", JSON.stringify(error, null, 2));
 
       const messages = {
-        USER_EXISTS: MESSAGES.USER_EXISTS,
-        USERNAME_EXISTS: MESSAGES.USERNAME_EXISTS,
-        INVALID_ROLE: MESSAGES.INVALID_ROLE,
-        MISSING_FIELDS: MESSAGES.MISSING_FIELDS
+        USER_EXISTS: AUTH_MESSAGES.USER_EXISTS,
+        USERNAME_EXISTS: AUTH_MESSAGES.USERNAME_EXISTS,
+        INVALID_ROLE: AUTH_MESSAGES.INVALID_ROLE,
+        MISSING_FIELDS: AUTH_MESSAGES.MISSING_FIELDS
       };
 
       res.status(400).json({
         success: false,
-        message: messages[error.message] || MESSAGES.SIGNUP_FAILED,
+        message: messages[error.message] || AUTH_MESSAGES.SIGNUP_FAILED,
         code: error.message
       });
     }
@@ -66,7 +66,7 @@ const authController = {
       const data = await loginUser(req.body.email, req.body.password);
       res.status(200).json({
         success: true,
-        message: MESSAGES.LOGIN_SUCCESS,
+        message: AUTH_MESSAGES.LOGIN_SUCCESS,
         data
       });
     } catch (error) {
@@ -83,7 +83,7 @@ const authController = {
       const data = await verifyEmailCode(req.body.email, req.body.code);
       res.status(200).json({
         success: true,
-        message: MESSAGES.EMAIL_VERIFIED_SUCCESS,
+        message: AUTH_MESSAGES.EMAIL_VERIFIED_SUCCESS,
         data
       });
     } catch (error) {
@@ -102,7 +102,7 @@ const authController = {
       if (!email) {
         return res.status(400).json({
           success: false,
-          message: MESSAGES.MISSING_FIELDS
+          message: AUTH_MESSAGES.MISSING_FIELDS
         });
       }
 
@@ -111,35 +111,35 @@ const authController = {
       if (isRateLimited(normalizedEmail)) {
         return res.status(429).json({
           success: false,
-          message: MESSAGES.TRY_AGAIN_LATER
+          message: AUTH_MESSAGES.TRY_AGAIN_LATER
         });
       }
 
       const { status } = await resendVerificationEmail(normalizedEmail);
 
-      if (status === MESSAGES.USER_NOT_FOUND) {
+      if (status === AUTH_MESSAGES.USER_NOT_FOUND) {
         return res.status(200).json({
           success: true,
-          message: MESSAGES.RESET_SENT_IF_REGISTERED
+          message: AUTH_MESSAGES.RESET_SENT_IF_REGISTERED
         });
       }
 
-      if (status === MESSAGES.ALREADY_VERIFIED) {
+      if (status === AUTH_MESSAGES.ALREADY_VERIFIED) {
         return res.status(400).json({
           success: false,
-          message: MESSAGES.ALREADY_VERIFIED
+          message: AUTH_MESSAGES.ALREADY_VERIFIED
         });
       }
 
       return res.status(200).json({
         success: true,
-        message: MESSAGES.CODE_SENT
+        message: AUTH_MESSAGES.CODE_SENT
       });
 
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: MESSAGES.RESEND_VERIFICATION_FAILED,
+        message: AUTH_MESSAGES.RESEND_VERIFICATION_FAILED,
         code: "RESEND_ERROR"
       });
     }
@@ -150,13 +150,13 @@ const authController = {
       if (!req.user) {
         return res.status(401).json({
           success: false,
-          message: MESSAGES.UNAUTHORIZED
+          message: AUTH_MESSAGES.UNAUTHORIZED
         });
       }
 
       res.status(200).json({
         success: true,
-        message: MESSAGES.PROFILE_FETCHED,
+        message: AUTH_MESSAGES.PROFILE_FETCHED,
         data: { user: req.user }
       });
 
@@ -164,7 +164,7 @@ const authController = {
       console.error('Profile Error:', error);
       res.status(500).json({
         success: false,
-        message: MESSAGES.PROFILE_FAILED,
+        message: AUTH_MESSAGES.PROFILE_FAILED,
         code: "PROFILE_ERROR"
       });
     }
@@ -177,7 +177,7 @@ const authController = {
       if (!email) {
         return res.status(400).json({
           success: false,
-          message: MESSAGES.MISSING_FIELDS
+          message: AUTH_MESSAGES.MISSING_FIELDS
         });
       }
 
@@ -221,7 +221,7 @@ const authController = {
   logout: async (req, res) => {
     res.status(200).json({
       success: true,
-      message: MESSAGES.LOGOUT_SUCCESS
+      message: AUTH_MESSAGES.LOGOUT_SUCCESS
     });
   },
 
@@ -232,7 +232,7 @@ const authController = {
       if (!email || !code) {
         return res.status(400).json({
           success: false,
-          message: MESSAGES.MISSING_FIELDS
+          message: AUTH_MESSAGES.MISSING_FIELDS
         });
       }
 
@@ -248,7 +248,7 @@ const authController = {
 
       return res.status(500).json({
         success: false,
-        message: MESSAGES.SOMETHING_WRONG,
+        message: AUTH_MESSAGES.SOMETHING_WRONG,
         code: "VERIFY_RESET_CODE_ERROR"
       });
     }
@@ -261,7 +261,7 @@ const authController = {
       if (!email || !newPassword) {
         return res.status(400).json({
           success: false,
-          message: MESSAGES.MISSING_FIELDS
+          message: AUTH_MESSAGES.MISSING_FIELDS
         });
       }
 
@@ -277,7 +277,7 @@ const authController = {
 
       return res.status(500).json({
         success: false,
-        message: MESSAGES.SOMETHING_WRONG,
+        message: AUTH_MESSAGES.SOMETHING_WRONG,
         code: "RESET_PASSWORD_ERROR"
       });
     }

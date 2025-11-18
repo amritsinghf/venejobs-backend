@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/emailService');
 const { hashPassword, comparePassword, generateToken } = require('../utils/helpers');
 const { User, Role } = require("../models");
-const MESSAGES = require("../constants/messages");
+const MESSAGES = require("../commonMessages/authMessages");
 
 async function signupUser({ name, email, password, role, username }) {
 

@@ -1,5 +1,5 @@
 const { Job } = require("../models");
-const JOB_MESSAGES = require("../constants/jobMessages");
+const JOB_MESSAGES = require("../commonMessages/jobResponseMessages");
 const { User } = require("../models");
 
 function validateBusinessRules(data) {
