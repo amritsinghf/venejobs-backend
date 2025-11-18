@@ -13,6 +13,7 @@ const budgetRoutes = require("./routes/budget_types.routes");
 
 const { getCurrentEnvironment, getEnvironmentConfig } = require("./config/environments");
 const createOrUpdateAdmin = require("./utils/createAdmin");
+const initializeProjectOptions = require("./utils/initializeProjectOptions");
 
 const app = express();
 const config = getEnvironmentConfig();
@@ -86,6 +87,9 @@ app.get("/", (req, res) => {
         }
 
         await createOrUpdateAdmin();
+
+        await initializeProjectOptions();
+
 
         app.listen(PORT, () => {
             console.log(`
