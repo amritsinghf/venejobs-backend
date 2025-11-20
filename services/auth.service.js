@@ -147,7 +147,7 @@ async function resendVerificationEmail(email) {
     // Generate new code
     const verificationCode = crypto.randomInt(100000, 999999).toString();
     user.email_verification_code = verificationCode;
-    user.email_verification_expires_at = new Date(Date.now() + 10 * 60 * 1000);
+    user.email_verification_expires_at = new Date(Date.now() + 10 * 60 * 1000).toISOString();
     await user.save();
 
     // Send email

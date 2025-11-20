@@ -54,8 +54,8 @@ const authController = {
 
       res.status(400).json({
         success: false,
-        message: messages[error.message] || AUTH_MESSAGES.SIGNUP_FAILED,
-        code: error.message
+        message: error.message,
+        code: AUTH_MESSAGES.SIGNUP_FAILED
       });
     }
   },
