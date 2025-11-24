@@ -163,11 +163,52 @@ async function updateJob(jobId, userId, payload) {
     return job;
 }
 
+async function getAllJobs(page = 1, limit = 10, filters = {}) {
+    const offset = (page - 1) * limit;
+
+    const where = {};
+
+    if (filters.skills) {
+        where.skills = { [Op.contains]: filters.skills };
+    }
+
+    if (filters.budget_type) {
+        where.budget_type = filters.budget_type;
+    }
+
+    if (filters.experience_level) {
+        where.experience_level = filters.experience_level;
+    }
+
+    const { rows: jobs, count: total } = await Job.findAndCountAll({
+        where,
+        limit,
+        offset,
+        order: [["created_at", "DESC"]],
+        include: [
+            {
+                model: User,
+                as: "client",
+                attributes: ["id", "name"]
+            }
+        ]
+    });
+
+    return {
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        total,
+        jobs
+    };
+}
+
 module.exports = {
     createJob,
     updateJobStatus,
     updateActiveStatus,
     getJobById,
     getJobsByUser,
-    updateJob
+    updateJob,
+    getAllJobs
 };

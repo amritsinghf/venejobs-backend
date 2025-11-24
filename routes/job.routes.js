@@ -31,4 +31,6 @@ router.get(
     authenticateToken,
     JobController.getJobDetailsById
 );
+router.get("/", JobController.getAllJobs);
+
 module.exports = router;

@@ -124,4 +124,30 @@ module.exports = {
             });
         }
     },
+    getAllJobs: async (req, res) => {
+        try {
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
+
+            const filters = {
+                skills: req.query.skills ? req.query.skills.split(",") : undefined,
+                budget_type: req.query.budget_type,
+                experience_level: req.query.experience_level
+            };
+
+            const data = await JobService.getAllJobs(page, limit, filters);
+
+            return res.json({
+                success: true,
+                ...data
+            });
+
+        } catch (error) {
+            return res.status(400).json({
+                success: false,
+                message: error.message
+            });
+        }
+    },
+
 };
