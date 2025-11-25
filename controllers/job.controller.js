@@ -78,24 +78,30 @@ module.exports = {
         }
     },
     getUserJobs: async (req, res) => {
-        try {
-            const userId = req.user.id;
+    try {
+        const userId = req.user.id;
 
-            const jobs = await JobService.getJobsByUser(userId);
+        const { page = 1, limit = 10 } = req.query;
 
-            return res.status(200).json({
-                success: true,
-                count: jobs.length,
-                jobs
-            });
+        const skip = (page - 1) * limit;
 
-        } catch (error) {
-            return res.status(400).json({
-                success: false,
-                message: error.message
-            });
-        }
-    },
+        const jobs = await JobService.getJobsByUser(userId, skip, limit);
+
+        return res.status(200).json({
+            success: true,
+            page: Number(page),
+            limit: Number(limit),
+            count: jobs.length,
+            jobs
+        });
+
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+},
     updateJob: async (req, res) => {
         try {
             const jobId = req.params.id;
