@@ -3,39 +3,48 @@ const { body, validationResult } = require('express-validator');
 const validateSignup = [
   body('name')
     .trim()
-    .notEmpty().withMessage('Full name is required')
+    .notEmpty().withMessage('Please enter your full name.')
     .isLength({ min: 2, max: 100 })
-    .withMessage('Name must be between 2 and 100 characters'),
+    .withMessage('Full name must be between 2 and 100 characters.'),
+
   body('email')
     .trim()
-    .isEmail().withMessage('Please provide a valid email address')
+    .isEmail().withMessage('Please enter a valid email address.')
     .isLength({ max: 255 })
-    .withMessage('Email must not exceed 255 characters')
+    .withMessage('Email cannot be longer than 255 characters.')
     .customSanitizer(value => value.toLowerCase()),
+
   body('password')
-    .isLength({ min: 8 }).withMessage('Must be at least 8 characters')
-    .matches(/[A-Z]/).withMessage('Need 1 uppercase letter')
-    .matches(/[a-z]/).withMessage('Need 1 lowercase letter')
-    .matches(/\d/).withMessage('Need 1 number')
-    .matches(/[!@#$%^&*(),.?":{}|<>]/).withMessage('Need 1 special character'),
+    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters long.')
+    .matches(/[A-Z]/).withMessage('Password must include at least one uppercase letter.')
+    .matches(/[a-z]/).withMessage('Password must include at least one lowercase letter.')
+    .matches(/\d/).withMessage('Password must include at least one number.')
+    .matches(/[!@#$%^&*(),.?":{}|<>]/).withMessage('Password must include at least one special character.'),
+
   body('username')
     .trim()
-    .notEmpty().withMessage('Username is required')
+    .notEmpty().withMessage('Please choose a username.')
     .isLength({ min: 3, max: 50 })
-    .withMessage('Username must be 3–50 characters'),
+    .withMessage('Username must be between 3 and 50 characters.'),
+
   body('role')
     .trim()
-    .notEmpty().withMessage('Role is required'),
+    .notEmpty().withMessage('Please select a role.'),
+
   (req, res, next) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      const combinedMessage = errors.array().map(err => err.msg).join(', ');
-      return res.status(400).json({ success: false, message: combinedMessage });
+      return res.status(400).json({
+        success: false,
+        message: errors.array()[0].msg
+      });
     }
+
     next();
   }
 ];
+
 
 // Validation rules for user login
 const validateLogin = [
@@ -43,24 +52,19 @@ const validateLogin = [
     .trim()
     .normalizeEmail()
     .isEmail()
-    .withMessage('Please provide a valid email address'),
+    .withMessage('Please enter a valid email address.'),
 
   body('password')
     .notEmpty()
-    .withMessage('Password is required'),
+    .withMessage('Please enter your password.'),
 
-  // Validation error handler
   (req, res, next) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
-        message: 'Validation failed',
-        errors: errors.array().map(error => ({
-          field: error.param,
-          message: error.msg
-        }))
+        message: errors.array()[0].msg
       });
     }
 
@@ -68,35 +72,29 @@ const validateLogin = [
   }
 ];
 
-
-
 const validateResetPassword = [
   body("newPassword")
-    .notEmpty().withMessage("New password is required")
-    .isLength({ min: 8 }).withMessage("Must be at least 8 characters")
-    .matches(/[A-Z]/).withMessage("Must contain at least 1 uppercase letter")
-    .matches(/[a-z]/).withMessage("Must contain at least 1 lowercase letter")
-    .matches(/\d/).withMessage("Must contain at least 1 number")
-    .matches(/[!@#$%^&*(),.?":{}|<>]/).withMessage("Must contain at least 1 special character"),
+    .notEmpty().withMessage("Please enter a new password.")
+    .isLength({ min: 8 }).withMessage("Password must be at least 8 characters long.")
+    .matches(/[A-Z]/).withMessage("Password must include at least one uppercase letter.")
+    .matches(/[a-z]/).withMessage("Password must include at least one lowercase letter.")
+    .matches(/\d/).withMessage("Password must include at least one number.")
+    .matches(/[!@#$%^&*(),.?":{}|<>]/).withMessage("Password must include at least one special character."),
 
   (req, res, next) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      const combinedMessage = errors
-        .array()
-        .map((err) => err.msg)
-        .join(", ");
-
       return res.status(400).json({
         success: false,
-        message: combinedMessage,
+        message: errors.array()[0].msg
       });
     }
 
     next();
-  },
+  }
 ];
+
 
 
 module.exports = {
