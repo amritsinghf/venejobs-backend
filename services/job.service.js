@@ -144,13 +144,19 @@ async function getJobById(jobId) {
 
     return job;
 }
-async function getJobsByUser(userId) {
+async function getJobsByUser(userId, skip, limit) {
     const jobs = await Job.findAll({
         where: { client_id: userId },
-        order: [["created_at", "DESC"]]
+        order: [["created_at", "DESC"]],
+        offset: skip,
+        limit: Number(limit)
     });
 
-    return jobs;
+    const total = await Job.count({
+        where: { client_id: userId }
+    });
+
+    return { jobs, total };
 }
 async function updateJob(jobId, userId, payload) {
     const job = await Job.findOne({ where: { id: jobId, client_id: userId } });
