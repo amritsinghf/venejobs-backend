@@ -68,7 +68,39 @@ const validateLogin = [
   }
 ];
 
+
+
+const validateResetPassword = [
+  body("newPassword")
+    .notEmpty().withMessage("New password is required")
+    .isLength({ min: 8 }).withMessage("Must be at least 8 characters")
+    .matches(/[A-Z]/).withMessage("Must contain at least 1 uppercase letter")
+    .matches(/[a-z]/).withMessage("Must contain at least 1 lowercase letter")
+    .matches(/\d/).withMessage("Must contain at least 1 number")
+    .matches(/[!@#$%^&*(),.?":{}|<>]/).withMessage("Must contain at least 1 special character"),
+
+  (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      const combinedMessage = errors
+        .array()
+        .map((err) => err.msg)
+        .join(", ");
+
+      return res.status(400).json({
+        success: false,
+        message: combinedMessage,
+      });
+    }
+
+    next();
+  },
+];
+
+
 module.exports = {
   validateSignup,
-  validateLogin
+  validateLogin,
+  validateResetPassword
 };

@@ -180,7 +180,6 @@ async function forgotPassword(email) {
     user.password_reset_code = resetCode;
     user.password_reset_expires_at = expiresAt;
     await user.save();
-
     return {
         message: MESSAGES.RESET_SENT_MESSAGE,
         shouldSendEmail: true,
