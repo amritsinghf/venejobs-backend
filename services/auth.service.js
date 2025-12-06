@@ -45,7 +45,6 @@ async function signupUser({ name, email, password, role, username }) {
         role: userRole.name,
         is_verified: user.is_email_verified,
         created_at: user.created_at,
-        email_verification_code: verificationCode
     };
 }
 
