@@ -22,14 +22,36 @@ const PORT = config.app.port;
 // Basic middlewares
 app.use(helmet());
 app.use(
-    cors({
-        origin:
-            getCurrentEnvironment() === "production"
-                ? ["https://venejob.com", "https://www.venejob.com", "https://app.venejob.com"]
-                : ["http://localhost:3000", "http://localhost:5173"],
-        credentials: true,
-    })
+  cors({
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        "https://venejob.com",
+        "https://www.venejob.com",
+        "https://app.venejob.com",
+        "http://localhost:3000",
+        "http://localhost:5173",
+      ];
+
+      // allow undefined origin (Postman, mobile apps, server-to-server)
+      if (!origin) return callback(null, true);
+
+      // Allow Vercel preview URLs: *.vercel.app
+      if (origin.endsWith(".vercel.app")) {
+        return callback(null, true);
+      }
+
+      // Allow from static list
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS: " + origin), false);
+    },
+    credentials: true,
+  })
 );
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan(getCurrentEnvironment() === "development" ? "dev" : "combined"));
