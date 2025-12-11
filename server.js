@@ -94,16 +94,17 @@ app.get("/", (req, res) => {
       const { execSync } = require("child_process");
       execSync("npx sequelize-cli db:migrate", { stdio: "inherit" });
     }
+
     if (env === "production") {
-      console.log("🚀 PRODUCTION MODE: DB safe. Migrations & seeds disabled. Run manual migrations when needed.");
+      console.log("🚀 PRODUCTION MODE: DB safe. Manual migrations only.");
+    }
 
-      await createOrUpdateAdmin();
+    // These should run for ALL ENVS (NOT inside production block)
+    await createOrUpdateAdmin();
+    await initializeProjectOptions();
 
-      await initializeProjectOptions();
-
-
-      app.listen(PORT, () => {
-        console.log(`
+    app.listen(PORT, () => {
+      console.log(`
 ============================================
         ✅ Venejob Backend Server Running
 --------------------------------------------
@@ -112,10 +113,10 @@ app.get("/", (req, res) => {
 🗄️ Database    : ${config.db.database}
 ============================================
 `);
-      });
+    });
 
-    } catch (err) {
-      console.error("Startup error:", err);
-      process.exit(1);
-    }
-  }) ();
+  } catch (err) {
+    console.error("Startup error:", err);
+    process.exit(1);
+  }
+})();
