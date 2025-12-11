@@ -5,7 +5,6 @@ const { User, Role } = require("../models");
 const MESSAGES = require("../commonMessages/authMessages");
 
 async function signupUser({ name, email, password, role, username }) {
-
     if (!name || !email || !password || !role || !username) {
         throw new Error(MESSAGES.MISSING_FIELDS);
     }
@@ -38,16 +37,19 @@ async function signupUser({ name, email, password, role, username }) {
     });
 
     return {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        username: user.username,
-        role: userRole.name,
-        is_verified: user.is_email_verified,
-        created_at: user.created_at,
-        email_verification_code: user.email_verification_code
+        user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            username: user.username,
+            role: userRole.name,
+            is_verified: user.is_email_verified,
+            created_at: user.created_at
+        },
+        verificationCode
     };
 }
+
 
 
 async function loginUser(email, password) {
@@ -94,7 +96,6 @@ async function loginUser(email, password) {
     };
 }
 
-
 async function verifyEmailCode(email, code) {
     const normalizedEmail = email.toLowerCase().trim();
 
@@ -131,6 +132,7 @@ async function verifyEmailCode(email, code) {
         token
     };
 }
+
 
 async function resendVerificationEmail(email) {
     const user = await User.findOne({ where: { email } });

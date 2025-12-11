@@ -15,7 +15,7 @@ const { User } = require("../models");
 const authController = {
   signup: async (req, res) => {
     try {
-      const user = await signupUser(req.body);
+      const { user, verificationCode } = await signupUser(req.body);
 
       res.status(201).json({
         success: true,
@@ -23,11 +23,12 @@ const authController = {
         data: { user }
       });
 
+      // Send email in background
       setImmediate(async () => {
         try {
           await sendVerificationEmail(
             user.email,
-            user.email_verification_code,
+            verificationCode,
             user.name
           );
           console.log("Verification email sent to:", user.email);
@@ -45,13 +46,6 @@ const authController = {
     } catch (error) {
       console.log("SIGNUP ERROR DETAILS:", JSON.stringify(error, null, 2));
 
-      const messages = {
-        USER_EXISTS: AUTH_MESSAGES.USER_EXISTS,
-        USERNAME_EXISTS: AUTH_MESSAGES.USERNAME_EXISTS,
-        INVALID_ROLE: AUTH_MESSAGES.INVALID_ROLE,
-        MISSING_FIELDS: AUTH_MESSAGES.MISSING_FIELDS
-      };
-
       res.status(400).json({
         success: false,
         message: error.message,
@@ -59,7 +53,6 @@ const authController = {
       });
     }
   },
-
 
   login: async (req, res) => {
     try {
