@@ -17,10 +17,10 @@ const authController = {
     try {
       const { user, verificationCode } = await signupUser(req.body);
 
-      // DO NOT await → API fast
+      // BACKGROUND EMAIL — NO DELAY FOR API
       sendVerificationEmail(user.email, verificationCode, user.name)
-        .then(() => console.log("Email sent"))
-        .catch(err => console.error("Email send failed:", err));
+        .then(() => console.log("📧 Email sending started..."))
+        .catch(err => console.error("EMAIL SEND FAILED ❌:", err));
 
       return res.status(201).json({
         success: true,
@@ -28,10 +28,11 @@ const authController = {
         data: { user }
       });
 
-    } catch (err) {
+    } catch (error) {
+      console.error("SIGNUP ERROR:", error);
       return res.status(400).json({
         success: false,
-        message: err.message
+        message: error.message
       });
     }
   },
