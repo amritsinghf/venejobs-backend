@@ -17,39 +17,21 @@ const authController = {
     try {
       const { user, verificationCode } = await signupUser(req.body);
 
-      res.status(201).json({
+      // DO NOT await → API fast
+      sendVerificationEmail(user.email, verificationCode, user.name)
+        .then(() => console.log("Email sent"))
+        .catch(err => console.error("Email send failed:", err));
+
+      return res.status(201).json({
         success: true,
         message: AUTH_MESSAGES.CODE_SENT,
         data: { user }
       });
 
-      // Send email in background
-      setImmediate(async () => {
-        try {
-          await sendVerificationEmail(
-            user.email,
-            verificationCode,
-            user.name
-          );
-          console.log("Verification email sent to:", user.email);
-
-        } catch (err) {
-          console.error("EMAIL SEND FAILED:", err.message);
-
-          await User.update(
-            { email_send_failed: true },
-            { where: { id: user.id } }
-          );
-        }
-      });
-
-    } catch (error) {
-      console.log("SIGNUP ERROR DETAILS:", JSON.stringify(error, null, 2));
-
-      res.status(400).json({
+    } catch (err) {
+      return res.status(400).json({
         success: false,
-        message: error.message,
-        code: AUTH_MESSAGES.SIGNUP_FAILED
+        message: err.message
       });
     }
   },
