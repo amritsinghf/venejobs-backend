@@ -36,7 +36,11 @@ async function sendVerificationEmail(to, code, name) {
     </div>
   </div>
   `;
-
+  await transporter.verify().then(() => {
+    console.log("SMTP CONNECTED ✔");
+  }).catch(err => {
+    console.error("SMTP ERROR ❌:", err);
+  });
   await transporter.sendMail({
     from: `"Venejob" <${process.env.SMTP_USER}>`,
     to,
