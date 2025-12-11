@@ -66,55 +66,44 @@ app.use("/api/lookup/budget-types", budgetRoutes);
 
 // Default route
 app.get("/", (req, res) => {
-    res.json({
-        success: true,
-        message: "Welcome to Venejob Backend API",
-        version: "1.0.0",
-        status: "operational",
-    });
+  res.json({
+    success: true,
+    message: "Welcome to Venejob Backend API",
+    version: "1.0.0",
+    status: "operational",
+  });
 });
 
 // App start + DB setup
 (async () => {
-    try {
-        await sequelize.authenticate();
-        console.log("Database connected");
+  try {
+    await sequelize.authenticate();
+    console.log("Database connected");
 
-        const env = getCurrentEnvironment();
+    const env = getCurrentEnvironment();
 
-        if (env === "development") {
-            console.log("🔧 Running migrations (dev only)...");
-            const { execSync } = require("child_process");
-            execSync("npx sequelize-cli db:migrate", { stdio: "inherit" });
-            execSync("npx sequelize-cli db:seed:all", { stdio: "inherit" });
-        }
+    if (env === "development") {
+      console.log("🔧 Running migrations (dev only)...");
+      const { execSync } = require("child_process");
+      execSync("npx sequelize-cli db:migrate", { stdio: "inherit" });
+      execSync("npx sequelize-cli db:seed:all", { stdio: "inherit" });
+    }
 
-        if (env === "test") {
-            console.log("🧪 Test env → resetting DB...");
-            const { execSync } = require("child_process");
-            execSync("npx sequelize-cli db:migrate:undo:all", { stdio: "inherit" });
-            execSync("npx sequelize-cli db:migrate", { stdio: "inherit" });
-            execSync("npx sequelize-cli db:seed:all", { stdio: "inherit" });
-        }
+    if (env === "test") {
+      console.log("🧪 Test environment detected – running migrations only (no reset).");
+      const { execSync } = require("child_process");
+      execSync("npx sequelize-cli db:migrate", { stdio: "inherit" });
+    }
+    if (env === "production") {
+      console.log("🚀 PRODUCTION MODE: DB safe. Migrations & seeds disabled. Run manual migrations when needed.");
 
-        if (env === "production") {
-            console.log(`
-⚠️ PRODUCTION MODE:
-----------------------------------------
-❌ Auto migrations disabled 
-✔ Run migrations manually using:
-   npx sequelize-cli db:migrate
-----------------------------------------
-`);
-        }
+      await createOrUpdateAdmin();
 
-        await createOrUpdateAdmin();
-
-        await initializeProjectOptions();
+      await initializeProjectOptions();
 
 
-        app.listen(PORT, () => {
-            console.log(`
+      app.listen(PORT, () => {
+        console.log(`
 ============================================
         ✅ Venejob Backend Server Running
 --------------------------------------------
@@ -123,10 +112,10 @@ app.get("/", (req, res) => {
 🗄️ Database    : ${config.db.database}
 ============================================
 `);
-        });
+      });
 
     } catch (err) {
-        console.error("Startup error:", err);
-        process.exit(1);
+      console.error("Startup error:", err);
+      process.exit(1);
     }
-})();
+  }) ();
