@@ -9,15 +9,25 @@ async function signupUser({ name, email, password, role, username }) {
         throw new Error(MESSAGES.MISSING_FIELDS);
     }
 
-    const existingUsername = await User.findOne({ where: { username } });
-    if (existingUsername) throw new Error(MESSAGES.USERNAME_EXISTS);
-
     const normalizedEmail = email.toLowerCase().trim();
+    const normalizedUsername = username.trim();
 
-    const existingUser = await User.findOne({ where: { email: normalizedEmail } });
-    if (existingUser) throw new Error(MESSAGES.USER_EXISTS);
+    const [existingUserByEmail, existingUserByUsername] = await Promise.all([
+        User.findOne({ where: { email: normalizedEmail } }),
+        User.findOne({ where: { username: normalizedUsername } })
+    ]);
 
-    const userRole = await Role.findOne({ where: { name: role.toLowerCase().trim() } });
+    if (existingUserByEmail) {
+        throw new Error(MESSAGES.USER_EXISTS);
+    }
+
+    if (existingUserByUsername) {
+        throw new Error(MESSAGES.USERNAME_EXISTS);
+    }
+
+    const userRole = await Role.findOne({
+        where: { name: role.toLowerCase().trim() }
+    });
     if (!userRole) throw new Error(MESSAGES.INVALID_ROLE);
 
     const hashedPassword = await hashPassword(password, 10);
@@ -28,7 +38,7 @@ async function signupUser({ name, email, password, role, username }) {
     const user = await User.create({
         name: name.trim(),
         email: normalizedEmail,
-        username,
+        username: normalizedUsername,
         password: hashedPassword,
         role_id: userRole.id,
         email_verification_code: verificationCode,
@@ -49,6 +59,7 @@ async function signupUser({ name, email, password, role, username }) {
         verificationCode
     };
 }
+
 
 
 
