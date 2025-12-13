@@ -1,23 +1,30 @@
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
+  host: process.env.SMTP_HOST,          // smtp-relay.brevo.com
+  port: Number(process.env.SMTP_PORT),  // 587
   secure: false,
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: process.env.SMTP_USER,        // apikey
+    pass: process.env.SMTP_PASS,        // Brevo SMTP key
   },
-  tls: {
-    rejectUnauthorized: false
-  }
 });
 
+// ✅ Debug (ek baar)
 console.log("SMTP CONFIG CHECK 👉", {
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT,
   user: process.env.SMTP_USER,
   pass: process.env.SMTP_PASS ? "✅ SET" : "❌ NOT SET",
+});
+
+// ✅ Verify ONCE (same file, but outside function)
+transporter.verify((err) => {
+  if (err) {
+    console.error("❌ SMTP ERROR:", err);
+  } else {
+    console.log("✅ SMTP CONNECTED (Brevo)");
+  }
 });
 
 async function sendVerificationEmail(to, code, name) {
@@ -42,19 +49,21 @@ async function sendVerificationEmail(to, code, name) {
     </div>
   </div>
   `;
-  console.log("Yes I am called")
-  await transporter.verify().then(() => {
-    console.log("SMTP CONNECTED ✔");
-  }).catch(err => {
-    console.error("SMTP ERROR ❌:", err);
-  });
-  await transporter.sendMail({
-    from: `"Venejob" <${process.env.SMTP_USER}>`,
-    to,
-    subject: 'Verify your Venejob Email Address',
-    html
-  });
+
+  try {
+    await transporter.sendMail({
+      from: `"Venejob (Dev)" <amrit5576singh@gmail.com>`, // ✅ VERIFIED BREVO SENDER
+      to,
+      subject: "Verify your Venejob Email Address",
+      html,
+    });
+
+    console.log("📧 OTP SENT TO:", to);
+  } catch (err) {
+    console.error("❌ EMAIL SEND FAILED:", err);
+  }
 }
+
 
 
 async function sendPasswordResetEmail(to, code, name) {
