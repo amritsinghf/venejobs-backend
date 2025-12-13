@@ -13,8 +13,14 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+console.log("SMTP CONFIG CHECK 👉", {
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  user: process.env.SMTP_USER,
+  pass: process.env.SMTP_PASS ? "✅ SET" : "❌ NOT SET",
+});
+
 async function sendVerificationEmail(to, code, name) {
-  console.log(code, ">>>>>>>>>")
   const html = `
   <div style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 30px;">
     <div style="max-width: 600px; margin: auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
@@ -36,6 +42,7 @@ async function sendVerificationEmail(to, code, name) {
     </div>
   </div>
   `;
+  console.log("Yes I am called")
   await transporter.verify().then(() => {
     console.log("SMTP CONNECTED ✔");
   }).catch(err => {
