@@ -90,11 +90,12 @@ app.get("/", (req, res) => {
     }
 
     if (env === "test") {
-      console.log("🧪 Test environment detected – running migrations only (no reset).");
+      console.log("🧪 Test environment detected – running migrations + seeds");
       const { execSync } = require("child_process");
-      execSync("npx sequelize-cli db:migrate", { stdio: "inherit" });
+      execSync("npx sequelize-cli db:migrate --env test", { stdio: "inherit" });
+      execSync("npx sequelize-cli db:seed:all --env test", { stdio: "inherit" });
     }
-
+    
     if (env === "production") {
       console.log("🚀 PRODUCTION MODE: DB safe. Manual migrations only.");
     }
