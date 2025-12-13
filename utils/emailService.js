@@ -1,31 +1,16 @@
-const nodemailer = require('nodemailer');
+const SibApiV3Sdk = require("sib-api-v3-sdk");
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,          // smtp-relay.brevo.com
-  port: Number(process.env.SMTP_PORT),  // 587
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,        // apikey
-    pass: process.env.SMTP_PASS,        // Brevo SMTP key
-  },
-});
+// 🔐 Brevo client setup
+const client = SibApiV3Sdk.ApiClient.instance;
+client.authentications["api-key"].apiKey = process.env.BREVO_API_KEY;
 
-// ✅ Debug (ek baar)
-console.log("SMTP CONFIG CHECK 👉", {
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  user: process.env.SMTP_USER,
-  pass: process.env.SMTP_PASS ? "✅ SET" : "❌ NOT SET",
-});
-
-// ✅ Verify ONCE (same file, but outside function)
-transporter.verify((err) => {
-  if (err) {
-    console.error("❌ SMTP ERROR:", err);
-  } else {
-    console.log("✅ SMTP CONNECTED (Brevo)");
-  }
-});
+const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+console.log(
+  "🔑 BREVO_API_KEY:",
+  process.env.BREVO_API_KEY
+    ? "✅ SET"
+    : "❌ NOT SET"
+);
 
 async function sendVerificationEmail(to, code, name) {
   const html = `
@@ -51,20 +36,25 @@ async function sendVerificationEmail(to, code, name) {
   `;
 
   try {
-    await transporter.sendMail({
-      from: `"Venejob (Dev)" <amrit5576singh@gmail.com>`, // ✅ VERIFIED BREVO SENDER
-      to,
+    await apiInstance.sendTransacEmail({
+      sender: {
+        email: "amrit5576singh@gmail.com",
+        name: "Venejob",
+      },
+      to: [{ email: to }],
       subject: "Verify your Venejob Email Address",
-      html,
+      htmlContent: html, // 🔥 SAME TEMPLATE
     });
 
-    console.log("📧 OTP SENT TO:", to);
+    console.log("✅ EMAIL SENT (Brevo API) →", to);
   } catch (err) {
-    console.error("❌ EMAIL SEND FAILED:", err);
+    console.error(
+      "❌ BREVO EMAIL ERROR:",
+      err.response?.body || err.message || err
+    );
+    throw err;
   }
 }
-
-
 
 async function sendPasswordResetEmail(to, code, name) {
   const html = `
