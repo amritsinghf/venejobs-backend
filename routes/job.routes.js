@@ -3,18 +3,19 @@ const router = express.Router();
 const JobController = require("../controllers/job.controller");
 const createJobValidator = require("../validators/job.validator");
 const { authenticateToken } = require("../middleware/auth");
-const { upload } = require("../utils/upload");
+const { jobUpload } = require("../utils/uploads/jobUpload");
+
 router.post(
     "/create",
     authenticateToken,
-    upload.single("attachment"),
+    jobUpload.single("attachment"),
     createJobValidator,
     JobController.createJob
 );
 router.put(
     "/:id",
     authenticateToken,
-    upload.single("attachment"),
+    jobUpload.single("attachment"),
     createJobValidator,
     JobController.updateJob
 );

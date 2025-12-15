@@ -5,12 +5,15 @@ const {
   resendVerificationEmail,
   forgotPassword,
   verifyResetCodeService,
-  resetPasswordService
+  resetPasswordService,
+  updateUserProfile,
+  updateProfileImage
 } = require('../services/auth.service');
 const { isRateLimited } = require('../utils/rateLimiter');
 const AUTH_MESSAGES = require("../commonMessages/authMessages");
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/emailService');
 const { User } = require("../models");
+const { validationResult } = require('express-validator');
 
 const authController = {
   signup: async (req, res) => {
@@ -50,6 +53,52 @@ const authController = {
         success: false,
         message: error.message,
         code: error.code || "LOGIN_ERROR"
+      });
+    }
+  },
+
+  updateProfile: async (req, res) => {
+    try {
+      const data = await updateUserProfile(req.user.id, req.body);
+
+      res.status(200).json({
+        success: true,
+        message: AUTH_MESSAGES.PROFILE_UPDATED,
+        data
+      });
+
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message: error.message,
+        code: error.code || 'PROFILE_UPDATE_ERROR'
+      });
+    }
+  },
+
+  updateProfilePicture: async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "Profile image is required"
+        });
+      }
+
+      const imagePath = `/uploads/profile/${req.file.filename}`;
+
+      await updateProfileImage(req.user.id, imagePath);
+
+      res.status(200).json({
+        success: true,
+        message: "Profile picture updated successfully",
+        data: { profile_picture: imagePath }
+      });
+
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message: error.message
       });
     }
   },
