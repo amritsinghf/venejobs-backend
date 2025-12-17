@@ -6,7 +6,7 @@ module.exports = {
             const userId = req.user.id;
             const payload = req.body;
 
-            const attachmentUrl = req.file ? `/uploads/${req.file.filename}` : null;
+            const attachmentUrl = req.file ? `/uploads/jobs/${req.file.filename}` : null;
 
             const job = await JobService.createJob(userId, {
                 ...payload,
