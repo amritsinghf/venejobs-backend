@@ -21,7 +21,7 @@ const authenticateToken = async (req, res, next) => {
     console.log("Decoded:", decoded);
 
     // ⭐ FIXED FOR SEQUELIZE
-    const user = await User.findByPk(decoded.userId);
+    const user = await User.findByPk(decoded?.userId?.id);
 
     if (!user) {
       return res.status(401).json({
