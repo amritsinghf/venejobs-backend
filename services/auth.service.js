@@ -71,14 +71,14 @@ async function loginUser(email, password) {
     const normalizedEmail = email.toLowerCase().trim();
 
     const user = await User.findOne({
-    where: { email: normalizedEmail },
-    include: [
-      {
-        model: Role,
-        attributes: ["id", "name"]
-      }
-    ]
-  });
+        where: { email: normalizedEmail },
+        include: [
+            {
+                model: Role,
+                attributes: ["id", "name"]
+            }
+        ]
+    });
 
     if (!user) {
         const error = new Error(USER_MESSAGES.INVALID_CREDENTIALS);
@@ -95,26 +95,26 @@ async function loginUser(email, password) {
 
     if (!user.is_email_verified) {
         const error = new Error(USER_MESSAGES.EMAIL_NOT_VERIFIED);
-        error.code = USER_MESSAGES.EMAIL_NOT_VERIFIED;
+        error.code = "EMAIL_NOT_VERIFIED";
         throw error;
     }
 
     const token = generateToken({
-    id: user.id,
-    role: user.Role.name
-  });
+        id: user.id,
+        role: user.Role.name
+    });
 
-  return {
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role_id: user.role_id,
-      role_name: user.Role.name,
-      is_verified: user.is_email_verified
-    },
-    token
-  };
+    return {
+        user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role_id: user.role_id,
+            role_name: user.Role.name,
+            is_verified: user.is_email_verified
+        },
+        token
+    };
 }
 
 async function updateUserProfile(userId, payload) {
@@ -227,12 +227,12 @@ async function verifyEmailCode(email, code) {
         throw new Error(USER_MESSAGES.INVALID_CODE);
     }
 
-    
+
     user.is_email_verified = true;
     user.email_verification_code = null;
     user.email_verification_expires_at = null;
     await user.save();
-    
+
     const token = generateToken({
         id: user.id,
         role: user.Role.name
@@ -244,7 +244,7 @@ async function verifyEmailCode(email, code) {
             name: user.name,
             email: user.email,
             role_id: user.role_id,
-            role_name: user.Role.name,  
+            role_name: user.Role.name,
             is_verified: user.is_email_verified
         },
         token
