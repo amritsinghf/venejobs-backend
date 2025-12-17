@@ -70,7 +70,16 @@ async function loginUser(email, password) {
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    const user = await User.findOne({ where: { email: normalizedEmail } });
+    const user = await User.findOne({
+    where: { email: normalizedEmail },
+    include: [
+      {
+        model: Role,
+        attributes: ["id", "name"]
+      }
+    ]
+  });
+
     if (!user) {
         const error = new Error(USER_MESSAGES.INVALID_CREDENTIALS);
         error.code = USER_MESSAGES.INVALID_CREDENTIALS;
@@ -90,18 +99,22 @@ async function loginUser(email, password) {
         throw error;
     }
 
-    const token = generateToken(user.id);
+    const token = generateToken({
+    id: user.id,
+    role: user.Role.name
+  });
 
-    return {
-        user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role_id: user.role_id,
-            is_verified: user.is_email_verified
-        },
-        token
-    };
+  return {
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role_id: user.role_id,
+      role_name: user.Role.name,
+      is_verified: user.is_email_verified
+    },
+    token
+  };
 }
 
 async function updateUserProfile(userId, payload) {
