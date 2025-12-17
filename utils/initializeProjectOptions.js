@@ -1,4 +1,5 @@
 const { ProjectSize, Duration, ExperienceLevel } = require("../models");
+const logger = require("./logger");
 
 module.exports = async function initializeProjectOptions() {
     // Project Sizes
@@ -49,5 +50,5 @@ module.exports = async function initializeProjectOptions() {
         await ExperienceLevel.findOrCreate({ where: { code: item.code }, defaults: item });
     }
 
-    console.log("✔ Default project options initialized");
+    logger.info("Default project options initialized");
 };

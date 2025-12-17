@@ -1,33 +1,42 @@
 const jwt = require('jsonwebtoken');
 const { User } = require("../models");
 const dotenv = require('dotenv');
+const logger = require('../utils/logger');
 dotenv.config();
 
 const authenticateToken = async (req, res, next) => {
   try {
-
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
 
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: 'Access token required',
-        code: 'MISSING_TOKEN'
+        message: "Access token required",
+        code: "MISSING_TOKEN",
       });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("Decoded:", decoded);
 
-    // ⭐ FIXED FOR SEQUELIZE
-    const user = await User.findByPk(decoded?.userId?.id);
+    // 🔥 FIX HERE
+    const userId = decoded.id || decoded.userId?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token payload",
+        code: "INVALID_TOKEN_PAYLOAD",
+      });
+    }
+
+    const user = await User.findByPk(userId);
 
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid token - user not found',
-        code: 'USER_NOT_FOUND'
+        message: "Invalid token - user not found",
+        code: "USER_NOT_FOUND",
       });
     }
 
@@ -35,31 +44,34 @@ const authenticateToken = async (req, res, next) => {
     next();
 
   } catch (error) {
-    console.error('🔐 Authentication error:', error.message);
+    logger.error("Authentication failed", {
+      error: error.message,
+    });
 
-    if (error.name === 'JsonWebTokenError') {
+    if (error.name === "JsonWebTokenError") {
       return res.status(401).json({
         success: false,
-        message: 'Invalid authentication token',
-        code: 'INVALID_TOKEN'
+        message: "Invalid authentication token",
+        code: "INVALID_TOKEN",
       });
     }
 
-    if (error.name === 'TokenExpiredError') {
+    if (error.name === "TokenExpiredError") {
       return res.status(401).json({
         success: false,
-        message: 'Authentication token has expired',
-        code: 'TOKEN_EXPIRED'
+        message: "Authentication token has expired",
+        code: "TOKEN_EXPIRED",
       });
     }
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: 'Authentication failed',
-      code: 'AUTH_ERROR'
+      message: "Authentication failed",
+      code: "AUTH_ERROR",
     });
   }
 };
+
 
 const optionalAuth = async (req, res, next) => {
   try {

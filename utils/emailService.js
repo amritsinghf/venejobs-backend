@@ -1,20 +1,26 @@
 const SibApiV3Sdk = require("sib-api-v3-sdk");
+const logger = require("./logger");
 
-// 🔐 Brevo client setup
+if (!process.env.BREVO_API_KEY) {
+  throw new Error("BREVO_API_KEY is missing");
+}
+
 const client = SibApiV3Sdk.ApiClient.instance;
 client.authentications["api-key"].apiKey = process.env.BREVO_API_KEY;
 
 const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-console.log(
-  "🔑 BREVO_API_KEY:",
-  process.env.BREVO_API_KEY
-    ? "✅ SET"
-    : "❌ NOT SET"
-);
+
+logger.info("Brevo transactional email service initialized");
+
+const SENDER = {
+  email: "amrit5576singh@gmail.com",
+  name: "Venejob",
+};
+
 
 async function sendVerificationEmail(to, code, name) {
   const html = `
-  <div style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 30px;">
+   <div style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 30px;">
     <div style="max-width: 600px; margin: auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
       <div style="background: linear-gradient(135deg, #0072ff, #00c6ff); padding: 20px; text-align: center;">
         <h1 style="color: white; margin: 0; font-size: 24px;">Welcome to Venejob 👋</h1>
@@ -32,28 +38,14 @@ async function sendVerificationEmail(to, code, name) {
         © ${new Date().getFullYear()} Venejob. All rights reserved.
       </div>
     </div>
-  </div>
-  `;
+  </div>`;
 
-  try {
-    await apiInstance.sendTransacEmail({
-      sender: {
-        email: "amrit5576singh@gmail.com",
-        name: "Venejob",
-      },
-      to: [{ email: to }],
-      subject: "Verify your Venejob Email Address",
-      htmlContent: html, // 🔥 SAME TEMPLATE
-    });
-
-    console.log("✅ EMAIL SENT (Brevo API) →", to);
-  } catch (err) {
-    console.error(
-      "❌ BREVO EMAIL ERROR:",
-      err.response?.body || err.message || err
-    );
-    throw err;
-  }
+  await apiInstance.sendTransacEmail({
+    sender: SENDER,
+    to: [{ email: to }],
+    subject: "Verify your Venejob Email Address",
+    htmlContent: html,
+  });
 }
 
 async function sendPasswordResetEmail(to, code, name) {
@@ -78,12 +70,13 @@ async function sendPasswordResetEmail(to, code, name) {
     </div>
   </div>`;
 
-  await transporter.sendMail({
-    from: `"Venejob" <${process.env.SMTP_USER}>`,
-    to,
-    subject: 'Reset Your Venejob Password',
-    html
+  await apiInstance.sendTransacEmail({
+    sender: SENDER,
+    to: [{ email: to }],
+    subject: "Reset Your Venejob Password",
+    htmlContent: html,
   });
 }
+
 
 module.exports = { sendVerificationEmail, sendPasswordResetEmail };

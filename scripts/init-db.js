@@ -1,9 +1,10 @@
 require("dotenv").config();
 const { Client } = require("pg");
 const { execSync } = require("child_process");
+const logger = require("../utils/logger");
 
 async function initializeDatabase(env = "development") {
-  console.log(`Setting up database for: ${env}`);
+  logger.info("Initializing database", { environment: env });
 
   const config = getConfig(env);
 
@@ -18,6 +19,7 @@ async function initializeDatabase(env = "development") {
     });
 
     await client.connect();
+    logger.info("Connected to postgres default database");
 
     // Check if database exists
     const dbCheck = await client.query(
@@ -27,32 +29,43 @@ async function initializeDatabase(env = "development") {
 
     if (dbCheck.rows.length === 0) {
       await client.query(`CREATE DATABASE ${config.db.database}`);
-      console.log(`Database created: ${config.db.database}`);
+      logger.info("Database created", {
+        database: config.db.database,
+      });
     } else {
-      console.log(`Database exists: ${config.db.database}`);
+      logger.info("Database already exists", {
+        database: config.db.database,
+      });
     }
 
     await client.end();
 
     // Run migrations
-    console.log("Running migrations...");
-    execSync(`npx sequelize-cli db:migrate --env ${env}`, { stdio: "inherit" });
+    logger.info("Running migrations", { environment: env });
+    execSync(`npx sequelize-cli db:migrate --env ${env}`, {
+      stdio: "inherit",
+    });
 
     // Run seeders
     try {
-      console.log("Running seeders...");
+      logger.info("Running seeders", { environment: env });
       execSync(`npx sequelize-cli db:seed:all --env ${env}`, {
         stdio: "inherit",
       });
     } catch {
-      console.log("No seeders found.");
+      logger.warn("No seeders found");
     }
 
-    console.log(`Database setup completed for: ${env}`);
+    logger.info("Database setup completed", { environment: env });
+
   } catch (err) {
-    console.error("Database setup failed:", err.message);
+    logger.error("Database setup failed", {
+      environment: env,
+      error: err.message,
+    });
   }
 }
+
 
 function getConfig(env) {
   const configs = {

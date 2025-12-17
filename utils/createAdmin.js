@@ -1,36 +1,54 @@
 const bcrypt = require("bcryptjs");
 const { User, Role } = require("../models");
+const logger = require("./logger");
 
 async function createOrUpdateAdmin() {
-    const adminRole = await Role.findOne({ where: { name: "admin" } });
+    try {
+        const adminRole = await Role.findOne({ where: { name: "admin" } });
 
-    if (!adminRole) {
-        console.error("❌ Admin role does not exist!");
-        return;
-    }
+        if (!adminRole) {
+            logger.error("Admin role does not exist");
+            return;
+        }
 
-    const email = process.env.ADMIN_EMAIL;
+        const email = process.env.ADMIN_EMAIL;
 
-    const existing = await User.findOne({ where: { email } });
-    const hashed = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
+        if (!email || !process.env.ADMIN_PASSWORD) {
+            logger.error("Admin credentials missing in environment variables");
+            return;
+        }
 
-    const adminData = {
-        name: process.env.ADMIN_NAME,
-        lastname: process.env.ADMIN_LASTNAME,
-        age: process.env.ADMIN_AGE,
-        phone: process.env.ADMIN_PHONE,
-        email,
-        password: hashed,
-        role_id: adminRole.id
-    };
+        const existing = await User.findOne({ where: { email } });
+        const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
 
-    if (existing) {
-        await existing.update(adminData);
-        console.log(`🔄 Admin updated → ${email}`);
-    } else {
-        await User.create(adminData);
-        console.log(`✅ Admin created → ${email}`);
+        const adminData = {
+            name: process.env.ADMIN_NAME,
+            lastname: process.env.ADMIN_LASTNAME,
+            age: process.env.ADMIN_AGE,
+            phone: process.env.ADMIN_PHONE,
+            email,
+            password: hashedPassword,
+            role_id: adminRole.id,
+        };
+
+        if (existing) {
+            await existing.update(adminData);
+            logger.info("Admin account updated", {
+                userId: existing.id,
+            });
+        } else {
+            const admin = await User.create(adminData);
+            logger.info("Admin account created", {
+                userId: admin.id,
+            });
+        }
+
+    } catch (error) {
+        logger.error("Create or update admin failed", {
+            error: error.message,
+        });
     }
 }
+
 
 module.exports = createOrUpdateAdmin;

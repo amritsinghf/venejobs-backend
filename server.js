@@ -14,6 +14,7 @@ const budgetRoutes = require("./routes/budget_types.routes");
 const { getCurrentEnvironment, getEnvironmentConfig } = require("./config/environments");
 const createOrUpdateAdmin = require("./utils/createAdmin");
 const initializeProjectOptions = require("./utils/initializeProjectOptions");
+const logger = require("./utils/logger");
 
 const app = express();
 const config = getEnvironmentConfig();
@@ -78,46 +79,43 @@ app.get("/", (req, res) => {
 (async () => {
   try {
     await sequelize.authenticate();
-    console.log("Database connected");
+    logger.info("Database connected");
 
     const env = getCurrentEnvironment();
 
     if (env === "development") {
-      console.log("🔧 Running migrations (dev only)...");
+      logger.info("Running migrations (development)");
       const { execSync } = require("child_process");
       execSync("npx sequelize-cli db:migrate", { stdio: "inherit" });
       execSync("npx sequelize-cli db:seed:all", { stdio: "inherit" });
     }
 
     if (env === "test") {
-      console.log("🧪 Test environment detected – running migrations + seeds");
+      logger.info("Test environment detected – running migrations + seeds");
       const { execSync } = require("child_process");
       execSync("npx sequelize-cli db:migrate --env test", { stdio: "inherit" });
       execSync("npx sequelize-cli db:seed:all --env test", { stdio: "inherit" });
     }
-    
+
     if (env === "production") {
-      console.log("🚀 PRODUCTION MODE: DB safe. Manual migrations only.");
+      logger.info("Production mode: DB safe (manual migrations only)");
     }
 
-    // These should run for ALL ENVS (NOT inside production block)
+    // Runs in ALL environments
     await createOrUpdateAdmin();
     await initializeProjectOptions();
 
     app.listen(PORT, () => {
-      console.log(`
-============================================
-        ✅ Venejob Backend Server Running
---------------------------------------------
-🌍 Environment : ${getCurrentEnvironment()}
-🚀 URL         : http://localhost:${PORT}
-🗄️ Database    : ${config.db.database}
-============================================
-`);
+      logger.info("Venejob Backend Server started", {
+        environment: env,
+        port: PORT,
+        database: config.db.database,
+      });
     });
 
   } catch (err) {
-    console.error("Startup error:", err);
+    logger.error("Startup error", err);
     process.exit(1);
   }
 })();
+
