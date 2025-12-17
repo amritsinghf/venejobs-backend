@@ -197,11 +197,23 @@ async function updateProfileImage(userId, imagePath) {
     };
 }
 
+
 async function verifyEmailCode(email, code) {
     const normalizedEmail = email.toLowerCase().trim();
 
-    const user = await User.findOne({ where: { email: normalizedEmail } });
-    if (!user) throw new Error(USER_MESSAGES.USER_NOT_FOUND);
+    const user = await User.findOne({
+        where: { email: normalizedEmail },
+        include: [
+            {
+                model: Role,
+                attributes: ["id", "name"]
+            }
+        ]
+    });
+
+    if (!user) {
+        throw new Error(USER_MESSAGES.USER_NOT_FOUND);
+    }
 
     if (!user.email_verification_code) {
         throw new Error(USER_MESSAGES.NO_CODE);
@@ -215,12 +227,16 @@ async function verifyEmailCode(email, code) {
         throw new Error(USER_MESSAGES.INVALID_CODE);
     }
 
+    
     user.is_email_verified = true;
     user.email_verification_code = null;
     user.email_verification_expires_at = null;
     await user.save();
-
-    const token = generateToken(user.id);
+    
+    const token = generateToken({
+        id: user.id,
+        role: user.Role.name
+    });
 
     return {
         user: {
@@ -228,12 +244,12 @@ async function verifyEmailCode(email, code) {
             name: user.name,
             email: user.email,
             role_id: user.role_id,
+            role_name: user.Role.name,  
             is_verified: user.is_email_verified
         },
         token
     };
 }
-
 
 async function resendVerificationEmail(email) {
     const user = await User.findOne({ where: { email } });
