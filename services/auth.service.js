@@ -5,16 +5,16 @@ const { User, Role } = require("../models");
 const USER_MESSAGES = require("../commonMessages/authMessages");
 
 async function signupUser({ name, email, password, role, username }) {
-    if (!name || !email || !password || !role || !username) {
+    if (!name || !email || !password || !role) {
         throw new Error(USER_MESSAGES.MISSING_FIELDS);
     }
 
     const normalizedEmail = email.toLowerCase().trim();
-    const normalizedUsername = username.trim();
+    // const normalizedUsername = username.trim();
 
     const [existingUserByEmail, existingUserByUsername] = await Promise.all([
         User.findOne({ where: { email: normalizedEmail } }),
-        User.findOne({ where: { username: normalizedUsername } })
+        // User.findOne({ where: { username: normalizedUsername } })
     ]);
 
     if (existingUserByEmail) {
@@ -38,7 +38,7 @@ async function signupUser({ name, email, password, role, username }) {
     const user = await User.create({
         name: name.trim(),
         email: normalizedEmail,
-        username: normalizedUsername,
+        // username: normalizedUsername,
         password: hashedPassword,
         role_id: userRole.id,
         email_verification_code: verificationCode,

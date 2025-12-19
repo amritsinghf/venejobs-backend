@@ -25,11 +25,11 @@ const validateSignup = [
     .matches(/[!@#$%^&*(),.?":{}|<>]/)
     .withMessage('Password must include at least one special character.'),
 
-  body('username')
-    .trim()
-    .notEmpty().withMessage('Please choose a username.')
-    .isLength({ min: 3, max: 50 })
-    .withMessage('Username must be between 3 and 50 characters.'),
+  // body('username')
+  //   .trim()
+  //   .notEmpty().withMessage('Please choose a username.')
+  //   .isLength({ min: 3, max: 50 })
+  //   .withMessage('Username must be between 3 and 50 characters.'),
 
   body('role')
     .trim()
