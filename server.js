@@ -10,7 +10,7 @@ const jobRoutes = require("./routes/job.routes");
 const lookupRoutes = require("./routes/lookup.routes");
 const projectOptionsRoutes = require("./routes/projectOptions.routes");
 const budgetRoutes = require("./routes/budget_types.routes");
-
+const freelancer_profile = require("./routes/freelancer.routes")
 const { getCurrentEnvironment, getEnvironmentConfig } = require("./config/environments");
 const createOrUpdateAdmin = require("./utils/createAdmin");
 const initializeProjectOptions = require("./utils/initializeProjectOptions");
@@ -64,6 +64,7 @@ app.use("/api/jobs", jobRoutes);
 app.use("/api/lookup", lookupRoutes);
 app.use("/api/lookup/project-options", projectOptionsRoutes);
 app.use("/api/lookup/budget-types", budgetRoutes);
+app.use("/api/freelancer", freelancer_profile);
 
 // Default route
 app.get("/", (req, res) => {

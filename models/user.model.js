@@ -8,11 +8,18 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: "role_id",
                 onDelete: "SET NULL"
             });
+
+            User.hasOne(models.FreelancerProfile, {
+                foreignKey: "user_id",
+                as: "freelancerProfile",
+                onDelete: "CASCADE"
+            });
         }
     }
 
     User.init(
         {
+            // BASIC
             name: { type: DataTypes.STRING, allowNull: false },
             lastname: DataTypes.STRING,
             age: DataTypes.INTEGER,
@@ -22,15 +29,26 @@ module.exports = (sequelize, DataTypes) => {
             email: { type: DataTypes.STRING, unique: true, allowNull: false },
             password: { type: DataTypes.STRING, allowNull: false },
 
+            // ROLE
             role_id: DataTypes.INTEGER,
 
+            // PROFILE (UI FIELDS)
+            profile_picture: DataTypes.STRING,
+            date_of_birth: DataTypes.DATE,
+            street_address: DataTypes.STRING,
+            apt_suite: DataTypes.STRING,
+            city: DataTypes.STRING,
+            state: DataTypes.STRING,
+            zip_code: DataTypes.STRING,
+            country: DataTypes.STRING,
+
+            // AUTH / SECURITY (🔥 YE WAHI FIELDS HAIN)
             is_email_verified: { type: DataTypes.BOOLEAN, defaultValue: false },
             email_verification_code: DataTypes.STRING,
             email_verification_expires_at: DataTypes.DATE,
 
             is_phone_verified: { type: DataTypes.BOOLEAN, defaultValue: false },
 
-            profile_picture: DataTypes.STRING,
             last_login: DataTypes.DATE,
 
             password_reset_code: DataTypes.STRING,
@@ -38,7 +56,7 @@ module.exports = (sequelize, DataTypes) => {
 
             email_send_failed: {
                 type: DataTypes.BOOLEAN,
-                defaultValue: false,
+                defaultValue: false
             }
         },
         {
