@@ -10,19 +10,27 @@ module.exports = {
         allowNull: false
       },
 
-      // BASIC INFO
       name: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      lastname: Sequelize.STRING,
-      age: Sequelize.INTEGER,
-      phone: Sequelize.STRING,
+      lastname: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      age: {
+        type: Sequelize.INTEGER,
+        allowNull: true
+      },
+      phone: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
 
-      // AUTH
       username: {
         type: Sequelize.STRING,
-        unique: true
+        unique: true,
+        allowNull: true
       },
       email: {
         type: Sequelize.STRING,
@@ -34,9 +42,9 @@ module.exports = {
         allowNull: false
       },
 
-      // ROLE
       role_id: {
         type: Sequelize.INTEGER,
+        allowNull: true,
         references: {
           model: "roles",
           key: "id"
@@ -45,40 +53,75 @@ module.exports = {
         onUpdate: "CASCADE"
       },
 
-      // PROFILE / UI FIELDS
-      profile_picture: Sequelize.STRING,
-      date_of_birth: Sequelize.DATE,
-      street_address: Sequelize.STRING,
-      apt_suite: Sequelize.STRING,
-      city: Sequelize.STRING,
-      state: Sequelize.STRING,
-      zip_code: Sequelize.STRING,
-      country: Sequelize.STRING,
+      profile_picture: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      date_of_birth: {
+        type: Sequelize.DATE,
+        allowNull: true
+      },
+      street_address: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      apt_suite: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      city: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      state: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      zip_code: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      country: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
 
-      // VERIFICATION
       is_email_verified: {
         type: Sequelize.BOOLEAN,
         defaultValue: false
       },
-      email_verification_code: Sequelize.STRING,
-      email_verification_expires_at: Sequelize.DATE,
+      email_verification_code: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      email_verification_expires_at: {
+        type: Sequelize.DATE,
+        allowNull: true
+      },
 
       is_phone_verified: {
         type: Sequelize.BOOLEAN,
         defaultValue: false
       },
 
-      // SECURITY
-      last_login: Sequelize.DATE,
-      password_reset_code: Sequelize.STRING,
-      password_reset_expires_at: Sequelize.DATE,
+      last_login: {
+        type: Sequelize.DATE,
+        allowNull: true
+      },
+      password_reset_code: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      password_reset_expires_at: {
+        type: Sequelize.DATE,
+        allowNull: true
+      },
 
       email_send_failed: {
         type: Sequelize.BOOLEAN,
         defaultValue: false
       },
 
-      // TIMESTAMPS
       created_at: {
         type: Sequelize.DATE,
         allowNull: false,

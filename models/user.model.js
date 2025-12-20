@@ -1,58 +1,125 @@
 "use strict";
-const { Model } = require("sequelize");
 
 module.exports = (sequelize, DataTypes) => {
-    class User extends Model {
-        static associate(models) {
-            User.belongsTo(models.Role, {
-                foreignKey: "role_id",
-                onDelete: "SET NULL"
-            });
-
-            User.hasOne(models.FreelancerProfile, {
-                foreignKey: "user_id",
-                as: "freelancerProfile",
-                onDelete: "CASCADE"
-            });
-        }
-    }
-
-    User.init(
+    const User = sequelize.define(
+        "User",
         {
-            // BASIC
-            name: { type: DataTypes.STRING, allowNull: false },
-            lastname: DataTypes.STRING,
-            age: DataTypes.INTEGER,
-            phone: DataTypes.STRING,
+            name: {
+                type: DataTypes.STRING,
+                allowNull: false
+            },
 
-            username: { type: DataTypes.STRING, unique: true },
-            email: { type: DataTypes.STRING, unique: true, allowNull: false },
-            password: { type: DataTypes.STRING, allowNull: false },
+            lastname: {
+                type: DataTypes.STRING,
+                allowNull: true
+            },
 
-            // ROLE
-            role_id: DataTypes.INTEGER,
+            age: {
+                type: DataTypes.INTEGER,
+                allowNull: true
+            },
 
-            // PROFILE (UI FIELDS)
-            profile_picture: DataTypes.STRING,
-            date_of_birth: DataTypes.DATE,
-            street_address: DataTypes.STRING,
-            apt_suite: DataTypes.STRING,
-            city: DataTypes.STRING,
-            state: DataTypes.STRING,
-            zip_code: DataTypes.STRING,
-            country: DataTypes.STRING,
+            phone: {
+                type: DataTypes.STRING,
+                allowNull: true
+            },
 
-            // AUTH / SECURITY (🔥 YE WAHI FIELDS HAIN)
-            is_email_verified: { type: DataTypes.BOOLEAN, defaultValue: false },
-            email_verification_code: DataTypes.STRING,
-            email_verification_expires_at: DataTypes.DATE,
+            username: {
+                type: DataTypes.STRING,
+                unique: true,
+                allowNull: true
+            },
 
-            is_phone_verified: { type: DataTypes.BOOLEAN, defaultValue: false },
+            email: {
+                type: DataTypes.STRING,
+                unique: true,
+                allowNull: false
+            },
 
-            last_login: DataTypes.DATE,
+            password: {
+                type: DataTypes.STRING,
+                allowNull: false
+            },
 
-            password_reset_code: DataTypes.STRING,
-            password_reset_expires_at: DataTypes.DATE,
+            role_id: {
+                type: DataTypes.INTEGER,
+                allowNull: true
+            },
+
+            profile_picture: {
+                type: DataTypes.STRING,
+                allowNull: true
+            },
+
+            date_of_birth: {
+                type: DataTypes.DATE,
+                allowNull: true
+            },
+
+            street_address: {
+                type: DataTypes.STRING,
+                allowNull: true
+            },
+
+            apt_suite: {
+                type: DataTypes.STRING,
+                allowNull: true
+            },
+
+            city: {
+                type: DataTypes.STRING,
+                allowNull: true
+            },
+
+            state: {
+                type: DataTypes.STRING,
+                allowNull: true
+            },
+
+            zip_code: {
+                type: DataTypes.STRING,
+                allowNull: true
+            },
+
+            country: {
+                type: DataTypes.STRING,
+                allowNull: true
+            },
+
+            is_email_verified: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: false
+            },
+
+            email_verification_code: {
+                type: DataTypes.STRING,
+                allowNull: true
+            },
+
+            email_verification_expires_at: {
+                type: DataTypes.DATE,
+                allowNull: true
+            },
+
+            is_phone_verified: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: false
+            },
+
+            last_login: {
+                type: DataTypes.DATE,
+                allowNull: true
+            },
+
+            password_reset_code: {
+                type: DataTypes.STRING,
+                allowNull: true
+            },
+
+            password_reset_expires_at: {
+                type: DataTypes.DATE,
+                allowNull: true
+            },
 
             email_send_failed: {
                 type: DataTypes.BOOLEAN,
@@ -60,14 +127,25 @@ module.exports = (sequelize, DataTypes) => {
             }
         },
         {
-            sequelize,
-            modelName: "User",
             tableName: "users",
             timestamps: true,
             createdAt: "created_at",
             updatedAt: "updated_at"
         }
     );
+
+    User.associate = (models) => {
+        User.belongsTo(models.Role, {
+            foreignKey: "role_id",
+            onDelete: "SET NULL"
+        });
+
+        User.hasOne(models.FreelancerProfile, {
+            foreignKey: "user_id",
+            as: "freelancerProfile",
+            onDelete: "CASCADE"
+        });
+    };
 
     return User;
 };

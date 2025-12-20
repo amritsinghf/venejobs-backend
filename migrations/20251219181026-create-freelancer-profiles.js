@@ -9,25 +9,56 @@ module.exports = {
         primaryKey: true,
         allowNull: false
       },
+
       user_id: {
         type: Sequelize.INTEGER,
+        allowNull: false,
+        unique: true,
+        references: {
+          model: "users",
+          key: "id"
+        },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE"
+      },
+
+      professional_title: {
+        type: Sequelize.STRING,
         allowNull: false
       },
-      professional_title: Sequelize.STRING,
-      overview: Sequelize.TEXT,
-      hourly_rate: Sequelize.FLOAT,
-      country: Sequelize.STRING,
-      city: Sequelize.STRING,
+
+      overview: {
+        type: Sequelize.TEXT,
+        allowNull: false
+      },
+
+      hourly_rate: {
+        type: Sequelize.FLOAT,
+        allowNull: false
+      },
+
+      country: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+
+      city: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+
       profile_completed: {
         type: Sequelize.BOOLEAN,
         defaultValue: false
       },
-      createdAt: {
+
+      created_at: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.fn("NOW")
       },
-      updatedAt: {
+
+      updated_at: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.fn("NOW")

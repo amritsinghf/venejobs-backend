@@ -8,29 +8,38 @@ module.exports = {
                 autoIncrement: true,
                 primaryKey: true
             },
+
             freelancer_id: {
                 type: Sequelize.INTEGER,
-                allowNull: false
+                allowNull: false,
+                unique: true,
+                references: {
+                    model: "freelancer_profiles",
+                    key: "id"
+                },
+                onDelete: "CASCADE",
+                onUpdate: "CASCADE"
             },
+
             skills: {
                 type: Sequelize.JSON,
-                defaultValue: []
+                allowNull: false
             },
             experiences: {
                 type: Sequelize.JSON,
-                defaultValue: []
+                allowNull: false
             },
             educations: {
                 type: Sequelize.JSON,
-                defaultValue: []
+                allowNull: false
             },
             languages: {
                 type: Sequelize.JSON,
-                defaultValue: []
+                allowNull: false
             },
             portfolios: {
                 type: Sequelize.JSON,
-                defaultValue: []
+                allowNull: false
             }
         });
     },

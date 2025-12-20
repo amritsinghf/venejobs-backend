@@ -5,23 +5,39 @@ const {
     FreelancerProfileMeta
 } = require("../models");
 
-const ensureProfile = async (userId, transaction) => {
+const ensureProfile = async (userId, payload, transaction) => {
     const [profile] = await FreelancerProfile.findOrCreate({
         where: { user_id: userId },
+        defaults: {
+            professional_title: payload.professional_title,
+            overview: payload.overview,
+            hourly_rate: payload.hourly_rate,
+            country: payload.country,
+            city: payload.city,
+            profile_completed: false
+        },
         transaction
     });
 
     await FreelancerProfileMeta.findOrCreate({
         where: { freelancer_id: profile.id },
+        defaults: {
+            skills: payload.skills,
+            experiences: payload.experiences,
+            educations: payload.educations,
+            languages: payload.languages,
+            portfolios: payload.portfolios
+        },
         transaction
     });
 
     return profile;
 };
 
-const saveFullProfile = async (userId, payload) => {
-    return sequelize.transaction(async (transaction) => {
 
+
+const saveFreelancerProfile = async (userId, payload) => {
+    return sequelize.transaction(async (transaction) => {
         await User.update(
             {
                 phone: payload.phone,
@@ -34,13 +50,10 @@ const saveFullProfile = async (userId, payload) => {
                 zip_code: payload.zip_code,
                 country: payload.country
             },
-            {
-                where: { id: userId },
-                transaction
-            }
+            { where: { id: userId }, transaction }
         );
 
-        const profile = await ensureProfile(userId, transaction);
+        const profile = await ensureProfile(userId, payload, transaction);
 
         await profile.update(
             {
@@ -51,21 +64,16 @@ const saveFullProfile = async (userId, payload) => {
             },
             { transaction }
         );
-
-        const meta = await FreelancerProfileMeta.findOne({
-            where: { freelancer_id: profile.id },
-            transaction
-        });
-
-        await meta.update(
+        console.log(payload, ">>>>>>>>>>")
+        await FreelancerProfileMeta.update(
             {
-                skills: payload.skills || [],
-                experiences: payload.experiences || [],
-                educations: payload.educations || [],
-                languages: payload.languages || [],
-                portfolios: payload.portfolios || []
+                skills: payload.skills,
+                experiences: payload.experiences,
+                educations: payload.educations,
+                languages: payload.languages,
+                portfolios: payload.portfolios
             },
-            { transaction }
+            { where: { freelancer_id: profile.id }, transaction }
         );
 
         return profile;
@@ -74,7 +82,6 @@ const saveFullProfile = async (userId, payload) => {
 
 const updateProfile = async (userId, payload) => {
     return sequelize.transaction(async (transaction) => {
-
         const userFields = [
             "phone",
             "profile_picture",
@@ -88,13 +95,13 @@ const updateProfile = async (userId, payload) => {
         ];
 
         const userUpdateData = {};
-        userFields.forEach(field => {
+        for (const field of userFields) {
             if (payload[field] !== undefined) {
                 userUpdateData[field] = payload[field];
             }
-        });
+        }
 
-        if (Object.keys(userUpdateData).length > 0) {
+        if (Object.keys(userUpdateData).length) {
             await User.update(userUpdateData, {
                 where: { id: userId },
                 transaction
@@ -117,23 +124,14 @@ const updateProfile = async (userId, payload) => {
         ];
 
         const profileUpdateData = {};
-        profileFields.forEach(field => {
+        for (const field of profileFields) {
             if (payload[field] !== undefined) {
                 profileUpdateData[field] = payload[field];
             }
-        });
-
-        if (Object.keys(profileUpdateData).length > 0) {
-            await profile.update(profileUpdateData, { transaction });
         }
 
-        const meta = await FreelancerProfileMeta.findOne({
-            where: { freelancer_id: profile.id },
-            transaction
-        });
-
-        if (!meta) {
-            throw new Error("Profile meta not found");
+        if (Object.keys(profileUpdateData).length) {
+            await profile.update(profileUpdateData, { transaction });
         }
 
         const metaFields = [
@@ -145,25 +143,26 @@ const updateProfile = async (userId, payload) => {
         ];
 
         const metaUpdateData = {};
-        metaFields.forEach(field => {
+        for (const field of metaFields) {
             if (payload[field] !== undefined) {
                 metaUpdateData[field] = payload[field];
             }
-        });
+        }
 
-        if (Object.keys(metaUpdateData).length > 0) {
-            await meta.update(metaUpdateData, { transaction });
+        if (Object.keys(metaUpdateData).length) {
+            await FreelancerProfileMeta.update(metaUpdateData, {
+                where: { freelancer_id: profile.id },
+                transaction
+            });
         }
 
         return true;
     });
 };
 
-
 const getProfile = async (userId) => {
     return User.findOne({
         where: { id: userId },
-
         attributes: [
             "id",
             "name",
@@ -174,35 +173,37 @@ const getProfile = async (userId) => {
             "city",
             "country"
         ],
-
-        include: [{
-            model: FreelancerProfile,
-            as: "freelancerProfile",
-            attributes: [
-                "id",
-                "professional_title",
-                "overview",
-                "hourly_rate",
-                "profile_completed"
-            ],
-            include: [{
-                model: FreelancerProfileMeta,
-                as: "meta",
+        include: [
+            {
+                model: FreelancerProfile,
+                as: "freelancerProfile",
                 attributes: [
-                    "skills",
-                    "experiences",
-                    "educations",
-                    "languages",
-                    "portfolios"
+                    "id",
+                    "professional_title",
+                    "overview",
+                    "hourly_rate",
+                    "profile_completed"
+                ],
+                include: [
+                    {
+                        model: FreelancerProfileMeta,
+                        as: "meta",
+                        attributes: [
+                            "skills",
+                            "experiences",
+                            "educations",
+                            "languages",
+                            "portfolios"
+                        ]
+                    }
                 ]
-            }]
-        }]
+            }
+        ]
     });
 };
 
-
 module.exports = {
-    saveFullProfile,
+    saveFreelancerProfile,
     updateProfile,
     getProfile
 };

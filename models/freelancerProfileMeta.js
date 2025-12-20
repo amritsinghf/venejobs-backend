@@ -1,3 +1,5 @@
+"use strict";
+
 module.exports = (sequelize, DataTypes) => {
     const FreelancerProfileMeta = sequelize.define(
         "FreelancerProfileMeta",
@@ -6,25 +8,30 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.INTEGER,
                 allowNull: false
             },
+
             skills: {
                 type: DataTypes.JSON,
-                defaultValue: []
+                allowNull: false
             },
+
             experiences: {
                 type: DataTypes.JSON,
-                defaultValue: []
+                allowNull: false
             },
+
             educations: {
                 type: DataTypes.JSON,
-                defaultValue: []
+                allowNull: false
             },
+
             languages: {
                 type: DataTypes.JSON,
-                defaultValue: []
+                allowNull: false
             },
+
             portfolios: {
                 type: DataTypes.JSON,
-                defaultValue: []
+                allowNull: false
             }
         },
         {
