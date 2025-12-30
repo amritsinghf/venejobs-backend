@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const ProjectOptionsController = require("../controllers/projectOptions.controller");
+const ProjectOptionsController = require("../controllers/projectOptions");
 
 router.get("/project-sizes", ProjectOptionsController.getProjectSizes);
 router.get("/durations", ProjectOptionsController.getDurations);

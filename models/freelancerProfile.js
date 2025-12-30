@@ -48,14 +48,39 @@ module.exports = (sequelize, DataTypes) => {
     );
 
     FreelancerProfile.associate = (models) => {
+
         FreelancerProfile.belongsTo(models.User, {
             foreignKey: "user_id",
             onDelete: "CASCADE"
         });
 
-        FreelancerProfile.hasOne(models.FreelancerProfileMeta, {
+        FreelancerProfile.hasMany(models.FreelancerSkill, {
             foreignKey: "freelancer_id",
-            as: "meta",
+            as: "skills",
+            onDelete: "CASCADE"
+        });
+
+        FreelancerProfile.hasMany(models.FreelancerExperience, {
+            foreignKey: "freelancer_id",
+            as: "experiences",
+            onDelete: "CASCADE"
+        });
+
+        FreelancerProfile.hasMany(models.FreelancerEducation, {
+            foreignKey: "freelancer_id",
+            as: "educations",
+            onDelete: "CASCADE"
+        });
+
+        FreelancerProfile.hasMany(models.FreelancerLanguage, {
+            foreignKey: "freelancer_id",
+            as: "languages",
+            onDelete: "CASCADE"
+        });
+
+        FreelancerProfile.hasMany(models.FreelancerPortfolio, {
+            foreignKey: "freelancer_id",
+            as: "portfolios",
             onDelete: "CASCADE"
         });
     };

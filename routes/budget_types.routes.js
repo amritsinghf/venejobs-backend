@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const BudgetController = require("../controllers/budgetTypes.controller");
+const BudgetController = require("../controllers/budgetTypes");
 
 router.post("/", BudgetController.createBudgetType);
 router.get("/", BudgetController.getBudgetTypes);

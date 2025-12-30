@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const FreelancerController = require("../controllers/freelancer.controller");
+const FreelancerController = require("../controllers/freelancer");
 const adminOrFreelancer = require("../middleware/adminOrFreelancer");
 const { authenticateToken } = require("../middleware/auth");
 const validateFreelancerProfile = require("../middleware/validateFreelancerProfile");

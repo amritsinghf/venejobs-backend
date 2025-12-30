@@ -93,9 +93,9 @@ module.exports = (req, res, next) => {
 
     // portfolios
     for (const port of body.portfolios) {
-        if (!port.title || !port.image_url) {
+        if (!port.title || !port.project_url) {
             return res.status(400).json({
-                message: "portfolio title and image_url are required"
+                message: "portfolio title and project_url are required"
             });
         }
     }

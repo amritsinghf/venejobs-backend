@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const JobController = require("../controllers/job.controller");
+const JobController = require("../controllers/job");
 const createJobValidator = require("../validators/job.validator");
 const { authenticateToken } = require("../middleware/auth");
 const { jobUpload } = require("../utils/uploads/jobUpload");

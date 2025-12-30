@@ -2,7 +2,12 @@ const {
     sequelize,
     User,
     FreelancerProfile,
-    FreelancerProfileMeta
+    FreelancerSkill,
+    FreelancerExperience,
+    FreelancerEducation,
+    FreelancerLanguage,
+    FreelancerPortfolio,
+
 } = require("../models");
 
 const ensureProfile = async (userId, payload, transaction) => {
@@ -19,25 +24,16 @@ const ensureProfile = async (userId, payload, transaction) => {
         transaction
     });
 
-    await FreelancerProfileMeta.findOrCreate({
-        where: { freelancer_id: profile.id },
-        defaults: {
-            skills: payload.skills,
-            experiences: payload.experiences,
-            educations: payload.educations,
-            languages: payload.languages,
-            portfolios: payload.portfolios
-        },
-        transaction
-    });
-
     return profile;
 };
 
 
-
 const saveFreelancerProfile = async (userId, payload) => {
     return sequelize.transaction(async (transaction) => {
+
+        // =========================
+        // USER
+        // =========================
         await User.update(
             {
                 phone: payload.phone,
@@ -53,6 +49,9 @@ const saveFreelancerProfile = async (userId, payload) => {
             { where: { id: userId }, transaction }
         );
 
+        // =========================
+        // PROFILE
+        // =========================
         const profile = await ensureProfile(userId, payload, transaction);
 
         await profile.update(
@@ -64,21 +63,122 @@ const saveFreelancerProfile = async (userId, payload) => {
             },
             { transaction }
         );
-        console.log(payload, ">>>>>>>>>>")
-        await FreelancerProfileMeta.update(
-            {
-                skills: payload.skills,
-                experiences: payload.experiences,
-                educations: payload.educations,
-                languages: payload.languages,
-                portfolios: payload.portfolios
-            },
-            { where: { freelancer_id: profile.id }, transaction }
-        );
+
+        const freelancerId = profile.id;
+
+        // =========================
+        // SKILLS
+        // =========================
+        await FreelancerSkill.destroy({
+            where: { freelancer_id: freelancerId },
+            transaction
+        });
+
+        if (payload.skills?.length) {
+            await FreelancerSkill.bulkCreate(
+                payload.skills.map(skill => ({
+                    freelancer_id: freelancerId,
+                    skill_name: skill.name,
+                    level: skill.level
+                })),
+                { transaction }
+            );
+        }
+
+        // =========================
+        // EXPERIENCES (UPDATED)
+        // =========================
+        await FreelancerExperience.destroy({
+            where: { freelancer_id: freelancerId },
+            transaction
+        });
+
+        if (payload.experiences?.length) {
+            await FreelancerExperience.bulkCreate(
+                payload.experiences.map(exp => ({
+                    freelancer_id: freelancerId,
+                    job_title: exp.job_title,
+                    company: exp.company,
+                    location: exp.location,
+                    city: exp.city,
+                    start_month: exp.start_month,
+                    start_year: exp.start_year,
+                    end_month: exp.end_month,
+                    end_year: exp.end_year,
+                    is_current: exp.is_current,
+                    description: exp.description
+                })),
+                { transaction }
+            );
+        }
+
+        // =========================
+        // EDUCATIONS (UPDATED)
+        // =========================
+        await FreelancerEducation.destroy({
+            where: { freelancer_id: freelancerId },
+            transaction
+        });
+
+        if (payload.educations?.length) {
+            await FreelancerEducation.bulkCreate(
+                payload.educations.map(edu => ({
+                    freelancer_id: freelancerId,
+                    institution_name: edu.institution_name,
+                    degree: edu.degree,
+                    field_of_study: edu.field_of_study,
+                    type_of_education: edu.type_of_education,
+                    start_date: edu.start_date,
+                    end_date: edu.end_date,
+                    description: edu.description
+                })),
+                { transaction }
+            );
+        }
+
+        // =========================
+        // LANGUAGES
+        // =========================
+        await FreelancerLanguage.destroy({
+            where: { freelancer_id: freelancerId },
+            transaction
+        });
+
+        if (payload.languages?.length) {
+            await FreelancerLanguage.bulkCreate(
+                payload.languages.map(lang => ({
+                    freelancer_id: freelancerId,
+                    language: lang.language,
+                    proficiency: lang.proficiency
+                })),
+                { transaction }
+            );
+        }
+
+        // =========================
+        // PORTFOLIOS
+        // =========================
+        await FreelancerPortfolio.destroy({
+            where: { freelancer_id: freelancerId },
+            transaction
+        });
+
+        if (payload.portfolios?.length) {
+            await FreelancerPortfolio.bulkCreate(
+                payload.portfolios.map(portfolio => ({
+                    freelancer_id: freelancerId,
+                    title: portfolio.title,
+                    description: portfolio.description,
+                    project_url: portfolio.project_url
+                })),
+                { transaction }
+            );
+        }
 
         return profile;
     });
 };
+
 
 const updateProfile = async (userId, payload) => {
     return sequelize.transaction(async (transaction) => {
@@ -149,12 +249,6 @@ const updateProfile = async (userId, payload) => {
             }
         }
 
-        if (Object.keys(metaUpdateData).length) {
-            await FreelancerProfileMeta.update(metaUpdateData, {
-                where: { freelancer_id: profile.id },
-                transaction
-            });
-        }
 
         return true;
     });
@@ -186,7 +280,7 @@ const getProfile = async (userId) => {
                 ],
                 include: [
                     {
-                        model: FreelancerProfileMeta,
+                        model: "",
                         as: "meta",
                         attributes: [
                             "skills",
