@@ -71,16 +71,17 @@ const saveFreelancerProfile = async (userId, payload) => {
       transaction
     });
 
-    if (payload.skills?.name?.length) {
+    if (payload.skills?.length) {
       await FreelancerSkill.bulkCreate(
-        payload.skills.name.map((skillName) => ({
+        payload.skills.map((skill) => ({
           freelancer_id: freelancerId,
-          skill_name: skillName,
-          level: null, // or default
+          skill_name: skill.name,
+          level: skill.level || null
         })),
         { transaction }
       );
     }
+
 
     // =========================
     // EXPERIENCES (UPDATED)
@@ -243,16 +244,17 @@ const updateProfile = async (userId, payload) => {
         transaction
       });
 
-      if (payload.skills.length) {
+      if (payload.skills?.length) {
         await FreelancerSkill.bulkCreate(
           payload.skills.map((skill) => ({
             freelancer_id: freelancerId,
             skill_name: skill.name,
-            level: skill.level
+            level: skill.level || null
           })),
           { transaction }
         );
       }
+
     }
 
     // =========================

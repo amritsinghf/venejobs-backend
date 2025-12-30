@@ -33,8 +33,18 @@ module.exports = (req, res, next) => {
     }
 
     // skills
-    if (!Array.isArray(body.skills.name) || body.skills.name.length === 0) {
-        return res.status(400).json({ message: "skills must be a non-empty array" });
+    if (!Array.isArray(body.skills) || body.skills.length === 0) {
+        return res.status(400).json({
+            message: "skills must be a non-empty array"
+        });
+    }
+
+    for (const skill of body.skills) {
+        if (!skill.name) {
+            return res.status(400).json({
+                message: "skill.name is required"
+            });
+        }
     }
 
     // experiences
