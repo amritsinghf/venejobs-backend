@@ -19,11 +19,12 @@ router.get(
     FreelancerController.getProfile
 );
 
-router.patch(
-    "/profile",
-    authenticateToken,
-    adminOrFreelancer,
-    FreelancerController.updateProfile
-);
+router.patch("/profile/basic", authenticateToken, adminOrFreelancer, FreelancerController.updateProfile);
+router.put("/profile/skills", authenticateToken, adminOrFreelancer, FreelancerController.updateSkills);
+router.put("/profile/experiences", authenticateToken, adminOrFreelancer, FreelancerController.updateExperiences);
+router.put("/profile/educations", authenticateToken, adminOrFreelancer, FreelancerController.updateEducations);
+router.put("/profile/languages", authenticateToken, adminOrFreelancer, FreelancerController.updateLanguages);
+router.put("/profile/portfolios", authenticateToken, adminOrFreelancer, FreelancerController.updatePortfolios);
+
 
 module.exports = router;
