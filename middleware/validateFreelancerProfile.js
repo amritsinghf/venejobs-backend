@@ -33,7 +33,7 @@ module.exports = (req, res, next) => {
     }
 
     // skills
-    if (!Array.isArray(body.skills) || body.skills.length === 0) {
+    if (!Array.isArray(body.skills.name) || body.skills.name.length === 0) {
         return res.status(400).json({ message: "skills must be a non-empty array" });
     }
 

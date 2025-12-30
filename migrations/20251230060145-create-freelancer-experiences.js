@@ -20,23 +20,45 @@ module.exports = {
         onUpdate: "CASCADE"
       },
 
-      company_name: {
+      job_title: {
         type: Sequelize.STRING,
         allowNull: false
       },
 
-      role: {
+      company: {
         type: Sequelize.STRING,
         allowNull: false
       },
 
-      start_date: {
-        type: Sequelize.DATE,
+      location: {
+        type: Sequelize.STRING
+      },
+
+      city: {
+        type: Sequelize.STRING
+      },
+
+      start_month: {
+        type: Sequelize.STRING,
         allowNull: false
       },
 
-      end_date: {
-        type: Sequelize.DATE
+      start_year: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+      },
+
+      end_month: {
+        type: Sequelize.STRING
+      },
+
+      end_year: {
+        type: Sequelize.INTEGER
+      },
+
+      is_current: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
       },
 
       description: {

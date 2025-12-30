@@ -43,7 +43,9 @@ const validateSignup = [
 const validateLogin = [
   body('email')
     .trim()
-    .normalizeEmail()
+    .normalizeEmail({
+      gmail_remove_dots:false
+    })
     .isEmail()
     .withMessage('Please enter a valid email address.'),
 
