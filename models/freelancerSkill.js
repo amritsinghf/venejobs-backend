@@ -13,14 +13,21 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false
             },
             level: {
-                type: DataTypes.STRING
+                type: DataTypes.STRING,
+                allowNull: true
             }
         },
         {
             tableName: "freelancer_skills",
             timestamps: true,
             createdAt: "created_at",
-            updatedAt: "updated_at"
+            updatedAt: "updated_at",
+            indexes: [
+                {
+                    unique: true,
+                    fields: ["freelancer_id", "skill_name"]
+                }
+            ]
         }
     );
 

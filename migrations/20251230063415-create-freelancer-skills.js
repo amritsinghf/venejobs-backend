@@ -26,7 +26,8 @@ module.exports = {
       },
 
       level: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: true
       },
 
       created_at: {
@@ -39,6 +40,15 @@ module.exports = {
         defaultValue: Sequelize.fn("NOW")
       }
     });
+
+    await queryInterface.addIndex(
+      "freelancer_skills",
+      ["freelancer_id", "skill_name"],
+      {
+        unique: true,
+        name: "unique_freelancer_skill"
+      }
+    );
   },
 
   async down(queryInterface) {

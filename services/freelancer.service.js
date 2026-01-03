@@ -231,31 +231,105 @@ const updateBasicProfile = async (userId, payload) => {
   });
 };
 
-const updateSkills = async (userId, skills) => {
+const createSkill = async (userId, data) => {
   return sequelize.transaction(async (transaction) => {
     const profile = await FreelancerProfile.findOne({
       where: { user_id: userId },
       transaction
     });
-    if (!profile) throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
 
-    await FreelancerSkill.destroy({
-      where: { freelancer_id: profile.id },
-      transaction
-    });
+    if (!profile) {
+      const err = new Error("Profile not found");
+      err.statusCode = 404;
+      throw err;
+    }
 
-    if (skills?.length) {
-      await FreelancerSkill.bulkCreate(
-        skills.map(skill => ({
+    try {
+      return await FreelancerSkill.create(
+        {
           freelancer_id: profile.id,
-          skill_name: skill.name,
-          level: skill.level || null
-        })),
+          skill_name: data.skill_name,
+          level: data.level || null
+        },
         { transaction }
       );
+    } catch (err) {
+      if (err.name === "SequelizeUniqueConstraintError") {
+        const e = new Error("Skill already exists");
+        e.statusCode = 409;
+        throw e;
+      }
+      throw err;
     }
   });
 };
+
+const updateSkill = async (userId, skillId, data) => {
+  return sequelize.transaction(async (transaction) => {
+    const profile = await FreelancerProfile.findOne({
+      where: { user_id: userId },
+      transaction
+    });
+
+    if (!profile) {
+      const err = new Error("Profile not found");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const skill = await FreelancerSkill.findOne({
+      where: {
+        id: skillId,
+        freelancer_id: profile.id
+      },
+      transaction
+    });
+
+    if (!skill) {
+      const err = new Error("Skill not found");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    await skill.update(
+      {
+        skill_name: data.skill_name,
+        level: data.level || null
+      },
+      { transaction }
+    );
+  });
+};
+
+const deleteSkill = async (userId, skillId) => {
+  return sequelize.transaction(async (transaction) => {
+    const profile = await FreelancerProfile.findOne({
+      where: { user_id: userId },
+      transaction
+    });
+
+    if (!profile) {
+      const err = new Error("Profile not found");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const deleted = await FreelancerSkill.destroy({
+      where: {
+        id: skillId,
+        freelancer_id: profile.id
+      },
+      transaction
+    });
+
+    if (!deleted) {
+      const err = new Error("Skill not found");
+      err.statusCode = 404;
+      throw err;
+    }
+  });
+};
+
 
 const createExperience = async (userId, data) => {
   return sequelize.transaction(async (transaction) => {
@@ -674,7 +748,9 @@ const getProfile = async (userId) => {
 module.exports = {
   saveFreelancerProfile,
   updateBasicProfile,
-  updateSkills,
+  createSkill,
+  updateSkill,
+  deleteSkill,
   createExperience,
   updateExperience,
   deleteExperience,

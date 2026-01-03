@@ -40,23 +40,30 @@ const updateProfile = async (req, res) => {
     }
 };
 
-const updateSkills = async (req, res) => {
+const createSkill = async (req, res) => {
     try {
-        await FreelancerService.updateSkills(
-            req.user.id,
-            req.body.skills
-        );
-
-        return res.json({
-            success: true,
-            message: "Skills updated successfully"
-        });
+        const skill = await FreelancerService.createSkill(req.user.id, req.body);
+        res.status(201).json({ success: true, data: skill });
     } catch (err) {
-        console.error(err);
-        return res.status(500).json({
-            success: false,
-            message: err.message
-        });
+        res.status(err.statusCode || 500).json({ success: false, message: err.message });
+    }
+};
+
+const updateSkill = async (req, res) => {
+    try {
+        await FreelancerService.updateSkill(req.user.id, req.params.skillId, req.body);
+        res.json({ success: true, message: "Skill updated successfully" });
+    } catch (err) {
+        res.status(err.statusCode || 500).json({ success: false, message: err.message });
+    }
+};
+
+const deleteSkill = async (req, res) => {
+    try {
+        await FreelancerService.deleteSkill(req.user.id, req.params.skillId);
+        res.json({ success: true, message: "Skill deleted successfully" });
+    } catch (err) {
+        res.status(err.statusCode || 500).json({ success: false, message: err.message });
     }
 };
 
@@ -342,7 +349,9 @@ const getProfile = async (req, res) => {
 module.exports = {
     saveProfile,
     updateProfile,
-    updateSkills,
+    createSkill,
+    updateSkill,
+    deleteSkill,
     createExperience,
     updateExperience,
     deleteExperience,

@@ -20,7 +20,10 @@ router.get(
 );
 
 router.patch("/profile/basic", authenticateToken, adminOrFreelancer, FreelancerController.updateProfile);
-router.put("/profile/skills", authenticateToken, adminOrFreelancer, FreelancerController.updateSkills);
+
+router.post("/skill", authenticateToken, adminOrFreelancer, FreelancerController.createSkill);
+router.put("/skill/:skillId", authenticateToken, adminOrFreelancer, FreelancerController.updateSkill);
+router.delete("/skill/:skillId", authenticateToken, adminOrFreelancer, FreelancerController.deleteSkill);
 
 router.put("/profile/experiences/:experienceId", authenticateToken, adminOrFreelancer, FreelancerController.updateExperience);
 router.post("/profile/experience", authenticateToken, adminOrFreelancer, FreelancerController.createExperience);
