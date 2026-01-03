@@ -1,3 +1,4 @@
+const freelancerProfileMessages = require("../commonMessages/freelancerProfileMessages");
 const {
   sequelize,
   User,
@@ -211,7 +212,7 @@ const updateBasicProfile = async (userId, payload) => {
       transaction
     });
 
-    if (!profile) throw new Error("Freelancer profile not found");
+    if (!profile) throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
 
     const profileFields = ["professional_title", "overview", "hourly_rate"];
     const profileUpdate = {};
@@ -236,7 +237,7 @@ const updateSkills = async (userId, skills) => {
       where: { user_id: userId },
       transaction
     });
-    if (!profile) throw new Error("Profile not found");
+    if (!profile) throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
 
     await FreelancerSkill.destroy({
       where: { freelancer_id: profile.id },
@@ -263,7 +264,24 @@ const createExperience = async (userId, data) => {
       transaction
     });
 
-    if (!profile) throw new Error("Profile not found");
+    if (!profile) throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+
+    const existingExperience = await FreelancerExperience.findOne({
+      where: {
+        freelancer_id: profile.id,
+        company: data.company,
+        job_title: data.job_title,
+        start_year: data.start_year,
+        start_month: data.start_month
+      },
+      transaction
+    });
+
+    if (existingExperience) {
+      throw new Error(
+        "Experience already exists for this company and role."
+      );
+    }
 
     return FreelancerExperience.create(
       {
@@ -292,7 +310,7 @@ const updateExperience = async (userId, experienceId, data) => {
       transaction
     });
 
-    if (!profile) throw new Error("Profile not found");
+    if (!profile) throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
 
     const experience = await FreelancerExperience.findOne({
       where: {
@@ -322,87 +340,281 @@ const updateExperience = async (userId, experienceId, data) => {
   });
 };
 
-const updateEducations = async (userId, educations) => {
+const deleteExperience = async (userId, experienceId) => {
   return sequelize.transaction(async (transaction) => {
     const profile = await FreelancerProfile.findOne({
       where: { user_id: userId },
       transaction
     });
-    if (!profile) throw new Error("Profile not found");
 
-    await FreelancerEducation.destroy({
-      where: { freelancer_id: profile.id },
+    if (!profile) throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+
+    const deleted = await FreelancerExperience.destroy({
+      where: {
+        id: experienceId,
+        freelancer_id: profile.id
+      },
       transaction
     });
 
-    if (educations?.length) {
-      await FreelancerEducation.bulkCreate(
-        educations.map(edu => ({
+    if (!deleted) throw new Error("Experience not found");
+  });
+};
+
+const createEducation = async (userId, data) => {
+  return sequelize.transaction(async (transaction) => {
+    const profile = await FreelancerProfile.findOne({
+      where: { user_id: userId },
+      transaction
+    });
+
+    if (!profile) {
+      const error = new Error("Profile not found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    try {
+      return await FreelancerEducation.create(
+        {
           freelancer_id: profile.id,
-          institution_name: edu.institution_name,
-          degree: edu.degree,
-          field_of_study: edu.field_of_study,
-          type_of_education: edu.type_of_education,
-          start_date: edu.start_date,
-          end_date: edu.end_date,
-          description: edu.description
-        })),
+          institution_name: data.institution_name,
+          degree: data.degree,
+          field_of_study: data.field_of_study,
+          type_of_education: data.type_of_education,
+          start_date: data.start_date,
+          end_date: data.end_date,
+          description: data.description
+        },
         { transaction }
       );
+    } catch (err) {
+      if (err.name === "SequelizeUniqueConstraintError") {
+        const error = new Error("Education already exists.");
+        error.statusCode = 409;
+        throw error;
+      }
+      throw err;
     }
   });
 };
 
-const updateLanguages = async (userId, languages) => {
+
+const updateEducation = async (userId, educationId, data) => {
   return sequelize.transaction(async (transaction) => {
     const profile = await FreelancerProfile.findOne({
       where: { user_id: userId },
       transaction
     });
-    if (!profile) throw new Error("Profile not found");
 
-    await FreelancerLanguage.destroy({
-      where: { freelancer_id: profile.id },
+    if (!profile) throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+
+    const education = await FreelancerEducation.findOne({
+      where: {
+        id: educationId,
+        freelancer_id: profile.id
+      },
       transaction
     });
 
-    if (languages?.length) {
-      await FreelancerLanguage.bulkCreate(
-        languages.map(lang => ({
-          freelancer_id: profile.id,
-          language: lang.language,
-          proficiency: lang.proficiency
-        })),
-        { transaction }
-      );
-    }
+    if (!education) throw new Error("Education not found");
+
+    await education.update(
+      {
+        institution_name: data.institution_name,
+        degree: data.degree,
+        field_of_study: data.field_of_study,
+        type_of_education: data.type_of_education,
+        start_date: data.start_date,
+        end_date: data.end_date,
+        description: data.description
+      },
+      { transaction }
+    );
   });
 };
 
-const updatePortfolios = async (userId, portfolios) => {
+const deleteEducation = async (userId, educationId) => {
   return sequelize.transaction(async (transaction) => {
     const profile = await FreelancerProfile.findOne({
       where: { user_id: userId },
       transaction
     });
-    if (!profile) throw new Error("Profile not found");
 
-    await FreelancerPortfolio.destroy({
-      where: { freelancer_id: profile.id },
+    if (!profile) throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+
+    const deleted = await FreelancerEducation.destroy({
+      where: {
+        id: educationId,
+        freelancer_id: profile.id
+      },
       transaction
     });
 
-    if (portfolios?.length) {
-      await FreelancerPortfolio.bulkCreate(
-        portfolios.map(port => ({
-          freelancer_id: profile.id,
-          title: port.title,
-          description: port.description,
-          project_url: port.project_url
-        })),
-        { transaction }
-      );
+    if (!deleted) throw new Error("Education not found");
+  });
+};
+
+const createLanguage = async (userId, data) => {
+  return sequelize.transaction(async (transaction) => {
+    const profile = await FreelancerProfile.findOne({
+      where: { user_id: userId },
+      transaction
+    });
+    if (!profile) throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+
+    const existingLanguage = await FreelancerLanguage.findOne({
+      where: {
+        freelancer_id: profile.id,
+        language: data.language
+      },
+      transaction
+    });
+
+    if (existingLanguage) {
+      throw new Error("Language already exists.");
     }
+
+    return FreelancerLanguage.create(
+      {
+        freelancer_id: profile.id,
+        language: data.language,
+        proficiency: data.proficiency
+      },
+      { transaction }
+    );
+  });
+};
+
+
+const updateLanguage = async (userId, languageId, data) => {
+  return sequelize.transaction(async (transaction) => {
+    const profile = await FreelancerProfile.findOne({
+      where: { user_id: userId },
+      transaction
+    });
+    if (!profile) throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+
+    const language = await FreelancerLanguage.findOne({
+      where: {
+        id: languageId,
+        freelancer_id: profile.id
+      },
+      transaction
+    });
+    if (!language) throw new Error("Language not found");
+
+    await language.update(
+      {
+        language: data.language,
+        proficiency: data.proficiency
+      },
+      { transaction }
+    );
+  });
+};
+
+const deleteLanguage = async (userId, languageId) => {
+  return sequelize.transaction(async (transaction) => {
+    const profile = await FreelancerProfile.findOne({
+      where: { user_id: userId },
+      transaction
+    });
+    if (!profile) throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+
+    const deleted = await FreelancerLanguage.destroy({
+      where: {
+        id: languageId,
+        freelancer_id: profile.id
+      },
+      transaction
+    });
+
+    if (!deleted) throw new Error("Language not found");
+  });
+};
+
+const createPortfolio = async (userId, data) => {
+  return sequelize.transaction(async (transaction) => {
+    const profile = await FreelancerProfile.findOne({
+      where: { user_id: userId },
+      transaction
+    });
+
+    if (!profile) throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+
+    const existingPortfolio = await FreelancerPortfolio.findOne({
+      where: {
+        freelancer_id: profile.id,
+        project_url: data.project_url
+      },
+      transaction
+    });
+
+    if (existingPortfolio) {
+      throw new Error("Portfolio with this project URL already exists.");
+    }
+
+    return FreelancerPortfolio.create(
+      {
+        freelancer_id: profile.id,
+        title: data.title,
+        description: data.description,
+        project_url: data.project_url
+      },
+      { transaction }
+    );
+  });
+};
+
+const updatePortfolio = async (userId, portfolioId, data) => {
+  return sequelize.transaction(async (transaction) => {
+    const profile = await FreelancerProfile.findOne({
+      where: { user_id: userId },
+      transaction
+    });
+
+    if (!profile) throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+
+    const portfolio = await FreelancerPortfolio.findOne({
+      where: {
+        id: portfolioId,
+        freelancer_id: profile.id
+      },
+      transaction
+    });
+
+    if (!portfolio) throw new Error("Portfolio not found");
+
+    await portfolio.update(
+      {
+        title: data.title,
+        description: data.description,
+        project_url: data.project_url
+      },
+      { transaction }
+    );
+  });
+};
+
+const deletePortfolio = async (userId, portfolioId) => {
+  return sequelize.transaction(async (transaction) => {
+    const profile = await FreelancerProfile.findOne({
+      where: { user_id: userId },
+      transaction
+    });
+
+    if (!profile) throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+
+    const deleted = await FreelancerPortfolio.destroy({
+      where: {
+        id: portfolioId,
+        freelancer_id: profile.id
+      },
+      transaction
+    });
+
+    if (!deleted) throw new Error("Portfolio not found");
   });
 };
 
@@ -465,8 +677,15 @@ module.exports = {
   updateSkills,
   createExperience,
   updateExperience,
-  updateEducations,
-  updateLanguages,
-  updatePortfolios,
+  deleteExperience,
+  createEducation,
+  updateEducation,
+  deleteEducation,
+  createLanguage,
+  updateLanguage,
+  deleteLanguage,
+  createPortfolio,
+  updatePortfolio,
+  deletePortfolio,
   getProfile
 };

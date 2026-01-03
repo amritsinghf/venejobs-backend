@@ -24,11 +24,22 @@ router.put("/profile/skills", authenticateToken, adminOrFreelancer, FreelancerCo
 
 router.put("/profile/experiences/:experienceId", authenticateToken, adminOrFreelancer, FreelancerController.updateExperience);
 router.post("/profile/experience", authenticateToken, adminOrFreelancer, FreelancerController.createExperience);
+router.delete("/profile/experience/:experienceId", authenticateToken, adminOrFreelancer, FreelancerController.deleteExperience);
+
+router.post("/profile/education", authenticateToken, adminOrFreelancer, FreelancerController.createEducation);
+router.put("/profile/education/:educationId", authenticateToken, adminOrFreelancer, FreelancerController.updateEducation);
+router.delete("/profile/education/:educationId", authenticateToken, adminOrFreelancer, FreelancerController.deleteEducation);
 
 
-router.put("/profile/educations", authenticateToken, adminOrFreelancer, FreelancerController.updateEducations);
-router.put("/profile/languages", authenticateToken, adminOrFreelancer, FreelancerController.updateLanguages);
-router.put("/profile/portfolios", authenticateToken, adminOrFreelancer, FreelancerController.updatePortfolios);
+router.post("/profile/language", authenticateToken, adminOrFreelancer, FreelancerController.createLanguage);
+router.put("/profile/language/:languageId", authenticateToken, adminOrFreelancer, FreelancerController.updateLanguage);
+router.delete("/profile/language/:languageId", authenticateToken, adminOrFreelancer, FreelancerController.deleteLanguage);
+
+
+router.post("/profile/portfolio", authenticateToken, adminOrFreelancer, FreelancerController.createPortfolio);
+router.put("/profile/portfolio/:portfolioId", authenticateToken, adminOrFreelancer, FreelancerController.updatePortfolio);
+router.delete("/profile/portfolio/:portfolioId", authenticateToken, adminOrFreelancer, FreelancerController.deletePortfolio);
+
 
 
 module.exports = router;

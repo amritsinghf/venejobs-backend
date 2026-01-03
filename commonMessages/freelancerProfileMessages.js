@@ -73,5 +73,10 @@ module.exports = {
         code: "PROFILE_PORTFOLIO_INVALID",
         message:
             "Each portfolio item must include a title and a valid image URL."
+    },
+
+    PROFILE_NOT_FOUND: {
+        code: "PROFILE_NOT_FOUND",
+        message: "Profile not found."
     }
 };
