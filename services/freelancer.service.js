@@ -256,37 +256,69 @@ const updateSkills = async (userId, skills) => {
   });
 };
 
-const updateExperiences = async (userId, experiences) => {
+const createExperience = async (userId, data) => {
   return sequelize.transaction(async (transaction) => {
     const profile = await FreelancerProfile.findOne({
       where: { user_id: userId },
       transaction
     });
+
     if (!profile) throw new Error("Profile not found");
 
-    await FreelancerExperience.destroy({
-      where: { freelancer_id: profile.id },
+    return FreelancerExperience.create(
+      {
+        freelancer_id: profile.id,
+        job_title: data.job_title,
+        company: data.company,
+        location: data.location,
+        city: data.city,
+        start_month: data.start_month,
+        start_year: data.start_year,
+        end_month: data.end_month,
+        end_year: data.end_year,
+        is_current: data.is_current,
+        description: data.description
+      },
+      { transaction }
+    );
+  });
+};
+
+
+const updateExperience = async (userId, experienceId, data) => {
+  return sequelize.transaction(async (transaction) => {
+    const profile = await FreelancerProfile.findOne({
+      where: { user_id: userId },
       transaction
     });
 
-    if (experiences?.length) {
-      await FreelancerExperience.bulkCreate(
-        experiences.map(exp => ({
-          freelancer_id: profile.id,
-          job_title: exp.job_title,
-          company: exp.company,
-          location: exp.location,
-          city: exp.city,
-          start_month: exp.start_month,
-          start_year: exp.start_year,
-          end_month: exp.end_month,
-          end_year: exp.end_year,
-          is_current: exp.is_current,
-          description: exp.description
-        })),
-        { transaction }
-      );
-    }
+    if (!profile) throw new Error("Profile not found");
+
+    const experience = await FreelancerExperience.findOne({
+      where: {
+        id: experienceId,
+        freelancer_id: profile.id
+      },
+      transaction
+    });
+
+    if (!experience) throw new Error("Experience not found");
+
+    await experience.update(
+      {
+        job_title: data.job_title,
+        company: data.company,
+        location: data.location,
+        city: data.city,
+        start_month: data.start_month,
+        start_year: data.start_year,
+        end_month: data.end_month,
+        end_year: data.end_year,
+        is_current: data.is_current,
+        description: data.description
+      },
+      { transaction }
+    );
   });
 };
 
@@ -431,7 +463,8 @@ module.exports = {
   saveFreelancerProfile,
   updateBasicProfile,
   updateSkills,
-  updateExperiences,
+  createExperience,
+  updateExperience,
   updateEducations,
   updateLanguages,
   updatePortfolios,

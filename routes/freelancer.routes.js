@@ -21,7 +21,11 @@ router.get(
 
 router.patch("/profile/basic", authenticateToken, adminOrFreelancer, FreelancerController.updateProfile);
 router.put("/profile/skills", authenticateToken, adminOrFreelancer, FreelancerController.updateSkills);
-router.put("/profile/experiences", authenticateToken, adminOrFreelancer, FreelancerController.updateExperiences);
+
+router.put("/profile/experiences/:experienceId", authenticateToken, adminOrFreelancer, FreelancerController.updateExperience);
+router.post("/profile/experience", authenticateToken, adminOrFreelancer, FreelancerController.createExperience);
+
+
 router.put("/profile/educations", authenticateToken, adminOrFreelancer, FreelancerController.updateEducations);
 router.put("/profile/languages", authenticateToken, adminOrFreelancer, FreelancerController.updateLanguages);
 router.put("/profile/portfolios", authenticateToken, adminOrFreelancer, FreelancerController.updatePortfolios);

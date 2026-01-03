@@ -60,16 +60,40 @@ const updateSkills = async (req, res) => {
     }
 };
 
-const updateExperiences = async (req, res) => {
+const createExperience = async (req, res) => {
     try {
-        await FreelancerService.updateExperiences(
+        const experience = await FreelancerService.createExperience(
             req.user.id,
-            req.body.experiences
+            req.body
+        );
+
+        res.status(201).json({
+            success: true,
+            message: "Experience added successfully",
+            data: experience
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
+
+
+const updateExperience = async (req, res) => {
+    try {
+        const { experienceId } = req.params;
+
+        await FreelancerService.updateExperience(
+            req.user.id,
+            experienceId,
+            req.body
         );
 
         return res.json({
             success: true,
-            message: "Experiences updated successfully"
+            message: "Experience updated successfully"
         });
     } catch (err) {
         console.error(err);
@@ -79,6 +103,7 @@ const updateExperiences = async (req, res) => {
         });
     }
 };
+
 
 const updateEducations = async (req, res) => {
     try {
@@ -163,7 +188,8 @@ module.exports = {
     saveProfile,
     updateProfile,
     updateSkills,
-    updateExperiences,
+    createExperience,
+    updateExperience,
     updateEducations,
     updateLanguages,
     updatePortfolios,
