@@ -330,6 +330,26 @@ const deleteSkill = async (userId, skillId) => {
   });
 };
 
+const getSkills = async (userId) => {
+  return sequelize.transaction(async (transaction) => {
+    const profile = await FreelancerProfile.findOne({
+      where: { user_id: userId },
+      transaction
+    });
+
+    if (!profile) {
+      const err = new Error("Profile not found");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    return await FreelancerSkill.findAll({
+      where: { freelancer_id: profile.id },
+      transaction
+    });
+  });
+};
+
 
 const createExperience = async (userId, data) => {
   return sequelize.transaction(async (transaction) => {
@@ -375,7 +395,6 @@ const createExperience = async (userId, data) => {
     );
   });
 };
-
 
 const updateExperience = async (userId, experienceId, data) => {
   return sequelize.transaction(async (transaction) => {
@@ -435,6 +454,33 @@ const deleteExperience = async (userId, experienceId) => {
   });
 };
 
+const getUserExperiences = async (userId) => {
+  return sequelize.transaction(async (transaction) => {
+    const profile = await FreelancerProfile.findOne({
+      where: { user_id: userId },
+      transaction
+    });
+
+    if (!profile) {
+      throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+    }
+
+    const experiences = await FreelancerExperience.findAll({
+      where: {
+        freelancer_id: profile.id
+      },
+      order: [
+        ["is_current", "DESC"],
+        ["start_year", "DESC"],
+        ["start_month", "DESC"]
+      ],
+      transaction
+    });
+
+    return experiences;
+  });
+};
+
 const createEducation = async (userId, data) => {
   return sequelize.transaction(async (transaction) => {
     const profile = await FreelancerProfile.findOne({
@@ -472,7 +518,6 @@ const createEducation = async (userId, data) => {
     }
   });
 };
-
 
 const updateEducation = async (userId, educationId, data) => {
   return sequelize.transaction(async (transaction) => {
@@ -529,6 +574,29 @@ const deleteEducation = async (userId, educationId) => {
   });
 };
 
+const getUserEducations = async (userId) => {
+  return sequelize.transaction(async (transaction) => {
+    const profile = await FreelancerProfile.findOne({
+      where: { user_id: userId },
+      transaction
+    });
+
+    if (!profile) {
+      throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+    }
+
+    const educations = await FreelancerEducation.findAll({
+      where: {
+        freelancer_id: profile.id
+      },
+      order: [["start_date", "DESC"]],
+      transaction
+    });
+
+    return educations;
+  });
+};
+
 const createLanguage = async (userId, data) => {
   return sequelize.transaction(async (transaction) => {
     const profile = await FreelancerProfile.findOne({
@@ -559,7 +627,6 @@ const createLanguage = async (userId, data) => {
     );
   });
 };
-
 
 const updateLanguage = async (userId, languageId, data) => {
   return sequelize.transaction(async (transaction) => {
@@ -605,6 +672,29 @@ const deleteLanguage = async (userId, languageId) => {
     });
 
     if (!deleted) throw new Error("Language not found");
+  });
+};
+
+const getUserLanguages = async (userId) => {
+  return sequelize.transaction(async (transaction) => {
+    const profile = await FreelancerProfile.findOne({
+      where: { user_id: userId },
+      transaction
+    });
+
+    if (!profile) {
+      throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+    }
+
+    const languages = await FreelancerLanguage.findAll({
+      where: {
+        freelancer_id: profile.id
+      },
+      order: [["language", "ASC"]],
+      transaction
+    });
+
+    return languages;
   });
 };
 
@@ -692,6 +782,29 @@ const deletePortfolio = async (userId, portfolioId) => {
   });
 };
 
+const getUserPortfolios = async (userId) => {
+  return sequelize.transaction(async (transaction) => {
+    const profile = await FreelancerProfile.findOne({
+      where: { user_id: userId },
+      transaction
+    });
+
+    if (!profile) {
+      throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+    }
+
+    const portfolios = await FreelancerPortfolio.findAll({
+      where: {
+        freelancer_id: profile.id
+      },
+      order: [["created_at", "DESC"]],
+      transaction
+    });
+
+    return portfolios;
+  });
+};
+
 const getProfile = async (userId) => {
   return User.findOne({
     where: { id: userId },
@@ -751,17 +864,22 @@ module.exports = {
   createSkill,
   updateSkill,
   deleteSkill,
+  getSkills,
   createExperience,
   updateExperience,
   deleteExperience,
+  getUserExperiences,
   createEducation,
   updateEducation,
   deleteEducation,
+  getUserEducations,
   createLanguage,
   updateLanguage,
   deleteLanguage,
+  getUserLanguages,
   createPortfolio,
   updatePortfolio,
   deletePortfolio,
+  getUserPortfolios,
   getProfile
 };

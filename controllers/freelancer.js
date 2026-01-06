@@ -67,6 +67,17 @@ const deleteSkill = async (req, res) => {
     }
 };
 
+const getSkills = async (req, res) => {
+    try {
+        const skills = await FreelancerService.getSkills(req.user.id);
+        res.json({ success: true, data: skills });
+    } catch (err) {
+        res
+            .status(err.statusCode || 500)
+            .json({ success: false, message: err.message });
+    }
+};
+
 const createExperience = async (req, res) => {
     try {
         const experience = await FreelancerService.createExperience(
@@ -86,7 +97,6 @@ const createExperience = async (req, res) => {
         });
     }
 };
-
 
 const updateExperience = async (req, res) => {
     try {
@@ -133,6 +143,24 @@ const deleteExperience = async (req, res) => {
     }
 };
 
+const getUserExperiences = async (req, res) => {
+    try {
+        const experiences = await FreelancerService.getUserExperiences(
+            req.user.id
+        );
+
+        return res.json({
+            success: true,
+            data: experiences
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
 
 const createEducation = async (req, res) => {
     try {
@@ -153,7 +181,6 @@ const createEducation = async (req, res) => {
         });
     }
 };
-
 
 const updateEducation = async (req, res) => {
     try {
@@ -192,6 +219,24 @@ const deleteEducation = async (req, res) => {
         });
     } catch (err) {
         res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
+
+const getUserEducations = async (req, res) => {
+    try {
+        const educations = await FreelancerService.getUserEducations(
+            req.user.id
+        );
+
+        return res.json({
+            success: true,
+            data: educations
+        });
+    } catch (err) {
+        return res.status(500).json({
             success: false,
             message: err.message
         });
@@ -252,6 +297,24 @@ const deleteLanguage = async (req, res) => {
     }
 };
 
+const getUserLanguages = async (req, res) => {
+  try {
+    const languages = await FreelancerService.getUserLanguages(
+      req.user.id
+    );
+
+    return res.json({
+      success: true,
+      data: languages
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message
+    });
+  }
+};
+
 const createPortfolio = async (req, res) => {
     try {
         const portfolio = await FreelancerService.createPortfolio(
@@ -306,25 +369,22 @@ const deletePortfolio = async (req, res) => {
     }
 };
 
+const getUserPortfolios = async (req, res) => {
+  try {
+    const portfolios = await FreelancerService.getUserPortfolios(
+      req.user.id
+    );
 
-const updatePortfolios = async (req, res) => {
-    try {
-        await FreelancerService.updatePortfolios(
-            req.user.id,
-            req.body.portfolios
-        );
-
-        return res.json({
-            success: true,
-            message: "Portfolios updated successfully"
-        });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({
-            success: false,
-            message: err.message
-        });
-    }
+    return res.json({
+      success: true,
+      data: portfolios
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message
+    });
+  }
 };
 
 const getProfile = async (req, res) => {
@@ -352,17 +412,22 @@ module.exports = {
     createSkill,
     updateSkill,
     deleteSkill,
+    getSkills,
     createExperience,
     updateExperience,
     deleteExperience,
+    getUserExperiences,
     createEducation,
     updateEducation,
     deleteEducation,
+    getUserEducations,
     createLanguage,
     updateLanguage,
     deleteLanguage,
+    getUserLanguages,
     createPortfolio,
     updatePortfolio,
     deletePortfolio,
+    getUserPortfolios,
     getProfile
 };
