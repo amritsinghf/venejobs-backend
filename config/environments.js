@@ -14,11 +14,7 @@ const environments = {
   },
   test: {
     db: {
-      host: process.env.TEST_DB_HOST,
-      port: process.env.TEST_DB_PORT,
-      database: process.env.TEST_DB_NAME,
-      user: process.env.TEST_DB_USER,
-      password: process.env.TEST_DB_PASSWORD,
+      url: process.env.DATABASE_URL
     },
     app: {
       port: process.env.PORT || 3001,
