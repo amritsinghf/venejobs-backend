@@ -29,7 +29,7 @@ const updateProfile = async (req, res) => {
 
         return res.json({
             success: true,
-            message: "Basic profile updated successfully"
+            message: "Profile updated successfully"
         });
     } catch (err) {
         console.error(err);
