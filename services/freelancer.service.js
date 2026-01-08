@@ -863,6 +863,52 @@ const getProfile = async (userId) => {
   });
 };
 
+const getBasicProfile = async (userId) => {
+  const user = await User.findOne({
+    where: { id: userId },
+    attributes: [
+      "phone",
+      "profile_picture",
+      "date_of_birth",
+      "street_address",
+      "apt_suite",
+      "city",
+      "state",
+      "zip_code",
+      "country"
+    ],
+    include: [
+      {
+        model: FreelancerProfile,
+        as: "freelancerProfile",
+        attributes: [
+          "professional_title",
+          "overview",
+          "hourly_rate"
+        ]
+      }
+    ]
+  });
+
+  if (!user || !user.freelancerProfile) {
+    return null;
+  }
+
+  return {
+    professional_title: user.freelancerProfile.professional_title,
+    overview: user.freelancerProfile.overview,
+    hourly_rate: user.freelancerProfile.hourly_rate,
+    phone: user.phone,
+    profile_picture: user.profile_picture,
+    date_of_birth: user.date_of_birth,
+    street_address: user.street_address,
+    apt_suite: user.apt_suite,
+    city: user.city,
+    state: user.state,
+    zip_code: user.zip_code,
+    country: user.country
+  };
+};
 
 module.exports = {
   saveFreelancerProfile,
@@ -887,5 +933,6 @@ module.exports = {
   updatePortfolio,
   deletePortfolio,
   getUserPortfolios,
-  getProfile
+  getProfile,
+  getBasicProfile
 };

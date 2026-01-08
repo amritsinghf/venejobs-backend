@@ -40,6 +40,26 @@ const updateProfile = async (req, res) => {
     }
 };
 
+
+const getBasicProfile = async (req, res) => {
+    try {
+        const profile = await FreelancerService.getBasicProfile(
+            req.user.id
+        );
+
+        return res.json({
+            success: true,
+            data: profile
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
+
 const createSkill = async (req, res) => {
     try {
         const skill = await FreelancerService.createSkill(req.user.id, req.body);
@@ -298,21 +318,21 @@ const deleteLanguage = async (req, res) => {
 };
 
 const getUserLanguages = async (req, res) => {
-  try {
-    const languages = await FreelancerService.getUserLanguages(
-      req.user.id
-    );
+    try {
+        const languages = await FreelancerService.getUserLanguages(
+            req.user.id
+        );
 
-    return res.json({
-      success: true,
-      data: languages
-    });
-  } catch (err) {
-    return res.status(500).json({
-      success: false,
-      message: err.message
-    });
-  }
+        return res.json({
+            success: true,
+            data: languages
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
 };
 
 const createPortfolio = async (req, res) => {
@@ -370,21 +390,21 @@ const deletePortfolio = async (req, res) => {
 };
 
 const getUserPortfolios = async (req, res) => {
-  try {
-    const portfolios = await FreelancerService.getUserPortfolios(
-      req.user.id
-    );
+    try {
+        const portfolios = await FreelancerService.getUserPortfolios(
+            req.user.id
+        );
 
-    return res.json({
-      success: true,
-      data: portfolios
-    });
-  } catch (err) {
-    return res.status(500).json({
-      success: false,
-      message: err.message
-    });
-  }
+        return res.json({
+            success: true,
+            data: portfolios
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
 };
 
 const getProfile = async (req, res) => {
@@ -409,6 +429,7 @@ const getProfile = async (req, res) => {
 module.exports = {
     saveProfile,
     updateProfile,
+    getBasicProfile,
     createSkill,
     updateSkill,
     deleteSkill,
@@ -429,5 +450,5 @@ module.exports = {
     updatePortfolio,
     deletePortfolio,
     getUserPortfolios,
-    getProfile
+    getProfile,
 };
