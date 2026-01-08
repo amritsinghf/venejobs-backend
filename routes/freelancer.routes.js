@@ -19,7 +19,7 @@ router.get(
     FreelancerController.getProfile
 );
 
-router.patch("/profile/basic", authenticateToken, adminOrFreelancer, FreelancerController.updateProfile);
+router.post("/profile/basic", authenticateToken, adminOrFreelancer, FreelancerController.updateProfile);
 
 router.post("/skill", authenticateToken, adminOrFreelancer, FreelancerController.createSkill);
 router.put("/skill/:skillId", authenticateToken, adminOrFreelancer, FreelancerController.updateSkill);
