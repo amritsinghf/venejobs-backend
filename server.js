@@ -38,19 +38,28 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
 ];
+
 app.use(helmet());
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // allow server-to-server / postman
-      if (!origin) return callback(null, true);
+      // allow server-to-server, Postman, curl
+      if (!origin) {
+        return callback(null, true);
+      }
 
+      // allow exact whitelisted origins
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
-      // ❌ ERROR THROW MAT KARO (IMPORTANT)
+      // allow ALL Vercel deployments
+      if (origin.endsWith(".vercel.app")) {
+        return callback(null, true);
+      }
+
+      // silently block others (NO ERROR)
       return callback(null, false);
     },
     credentials: true,
