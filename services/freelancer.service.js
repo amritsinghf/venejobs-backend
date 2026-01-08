@@ -809,14 +809,13 @@ const getProfile = async (userId) => {
   return User.findOne({
     where: { id: userId },
     attributes: [
+      "id",
+      "name",
+      "lastname",
+      "email",
       "phone",
       "profile_picture",
-      "date_of_birth",
-      "street_address",
-      "apt_suite",
       "city",
-      "state",
-      "zip_code",
       "country"
     ],
     include: [
@@ -824,9 +823,35 @@ const getProfile = async (userId) => {
         model: FreelancerProfile,
         as: "freelancerProfile",
         attributes: [
+          "id",
           "professional_title",
           "overview",
-          "hourly_rate"
+          "hourly_rate",
+          "profile_completed"
+        ],
+        include: [
+          {
+            model: FreelancerSkill,
+            as: "skills",
+            attributes: ["id", "skill_name", "level"]
+          },
+          {
+            model: FreelancerExperience,
+            as: "experiences"
+            // attributes optional (return all)
+          },
+          {
+            model: FreelancerEducation,
+            as: "educations"
+          },
+          {
+            model: FreelancerLanguage,
+            as: "languages"
+          },
+          {
+            model: FreelancerPortfolio,
+            as: "portfolios"
+          }
         ]
       }
     ]
