@@ -16,7 +16,6 @@ module.exports = {
 
         // Design & Multimedia
         { id: "ds000001", name: "UI Design", categoryCode: "design_multimedia" },
-        { id: "ds000002", name: "UX Design", categoryCode: "design_multimedia" },
         { id: "ds000003", name: "Wireframing", categoryCode: "design_multimedia" },
         { id: "ds000004", name: "Figma", categoryCode: "design_multimedia" },
         { id: "ds000005", name: "Prototyping", categoryCode: "design_multimedia" },

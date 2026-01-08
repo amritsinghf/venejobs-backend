@@ -4,6 +4,7 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 require("dotenv").config();
 
+const { execSync } = require("child_process");
 const { sequelize } = require("./models");
 
 const authRoutes = require("./routes/authRoutes");
@@ -118,24 +119,33 @@ app.get("/", (req, res) => {
 
     const env = getCurrentEnvironment();
 
+    // ======================
+    // DEVELOPMENT
+    // ======================
     if (env === "development") {
-      logger.info("Running migrations & seeds (development)");
-      const { execSync } = require("child_process");
+      logger.info("Running migrations (development)");
       execSync("npx sequelize-cli db:migrate", { stdio: "inherit" });
-      execSync("npx sequelize-cli db:seed:all", { stdio: "inherit" });
+
+      if (process.env.RUN_SEEDS === "true") {
+        logger.info("Running seeds (development)");
+        execSync("npx sequelize-cli db:seed:all", { stdio: "inherit" });
+      }
     }
 
+    // ======================
+    // TEST
+    // ======================
     if (env === "test") {
       logger.info("Running migrations & seeds (test)");
-      const { execSync } = require("child_process");
-      execSync("npx sequelize-cli db:migrate --env test", {
-        stdio: "inherit",
-      });
+      execSync("npx sequelize-cli db:migrate --env test", { stdio: "inherit" });
       execSync("npx sequelize-cli db:seed:all --env test", {
         stdio: "inherit",
       });
     }
 
+    // ======================
+    // PRODUCTION SAFE INIT
+    // ======================
     await createOrUpdateAdmin();
     await initializeProjectOptions();
 
@@ -150,3 +160,4 @@ app.get("/", (req, res) => {
     process.exit(1);
   }
 })();
+
