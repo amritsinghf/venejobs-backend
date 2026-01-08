@@ -80,12 +80,6 @@ const validateUpdateProfile = [
     .isLength({ min: 2, max: 100 })
     .withMessage('Name must be between 2 and 100 characters.'),
 
-  body('username')
-    .optional()
-    .trim()
-    .isLength({ min: 3, max: 50 })
-    .withMessage('Username must be between 3 and 50 characters.'),
-
   body('age')
     .optional()
     .isInt({ min: 1 })
