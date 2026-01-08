@@ -87,6 +87,7 @@ const saveFreelancerProfile = async (userId, payload) => {
     // =========================
     // EXPERIENCES (UPDATED)
     // =========================
+
     await FreelancerExperience.destroy({
       where: { freelancer_id: freelancerId },
       transaction
@@ -102,14 +103,18 @@ const saveFreelancerProfile = async (userId, payload) => {
           city: exp.city,
           start_month: exp.start_month,
           start_year: exp.start_year,
-          end_month: exp.end_month,
-          end_year: exp.end_year,
+
+          // 👇 IMPORTANT LOGIC
+          end_month: exp.is_current ? null : exp.end_month,
+          end_year: exp.is_current ? null : exp.end_year,
+
           is_current: exp.is_current,
           description: exp.description
         })),
         { transaction }
       );
     }
+
 
     // =========================
     // EDUCATIONS (UPDATED)

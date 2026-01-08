@@ -56,20 +56,33 @@ module.exports = (req, res, next) => {
             "city",
             "start_month",
             "start_year",
-            "end_month",
-            "end_year",
             "is_current",
             "description"
         ];
 
+        // common required fields
         for (const field of requiredExpFields) {
-            if (exp[field] === undefined) {
+            if (
+                exp[field] === undefined ||
+                exp[field] === null ||
+                exp[field] === ""
+            ) {
                 return res.status(400).json({
                     message: `experience.${field} is required`
                 });
             }
         }
+
+        // 🔥 CONDITIONAL LOGIC
+        if (!exp.is_current) {
+            if (!exp.end_month || !exp.end_year) {
+                return res.status(400).json({
+                    message: "end_month and end_year are required for non-current experience"
+                });
+            }
+        }
     }
+
 
     // educations
     for (const edu of body.educations) {
