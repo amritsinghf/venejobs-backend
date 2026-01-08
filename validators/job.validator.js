@@ -1,4 +1,4 @@
-const { body } = require("express-validator");
+const { body, validationResult } = require("express-validator");
 
 const createJobValidator = [
     body("title")
@@ -10,7 +10,30 @@ const createJobValidator = [
         .notEmpty().withMessage("Category is required"),
 
     body("skills")
-        .isArray({ min: 1 }).withMessage("At least 1 skill is required"),
+        .custom((value, { req }) => {
+            let skills;
+
+            try {
+                // FormData se string aata hai
+                skills = typeof value === "string" ? JSON.parse(value) : value;
+            } catch (e) {
+                throw new Error("Skills must be valid JSON");
+            }
+
+            if (!Array.isArray(skills) || skills.length === 0) {
+                throw new Error("At least 1 skill is required");
+            }
+
+            skills.forEach((skill) => {
+                if (!skill.name || !skill.level) {
+                    throw new Error("Each skill must have name and level");
+                }
+            });
+
+            // overwrite parsed value for controller
+            req.body.skills = skills;
+            return true;
+        }),
 
     body("project_size")
         .isIn(["Small", "Medium", "Large"])
@@ -32,21 +55,20 @@ const createJobValidator = [
         .withMessage("Budget must be greater than 0"),
 
     body("description")
+        .trim()
         .notEmpty().withMessage("Description is required")
         .isLength({ min: 20 }).withMessage("Description must be at least 20 characters"),
 
     (req, res, next) => {
-        const { validationResult } = require("express-validator");
         const errors = validationResult(req);
-
         if (!errors.isEmpty()) {
             return res.status(400).json({
                 success: false,
-                errors: errors.array()
+                errors: errors.array(),
             });
         }
         next();
-    }
+    },
 ];
 
-module.exports = createJobValidator
+module.exports = createJobValidator;

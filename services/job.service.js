@@ -4,6 +4,14 @@ const { User } = require("../models");
 
 function validateBusinessRules(data) {
 
+    if (typeof data.skills === "string") {
+        try {
+            data.skills = JSON.parse(data.skills);
+        } catch (err) {
+            throw new Error(JOB_MESSAGES.SKILLS_NOT_ARRAY);
+        }
+    }
+
     if (!Array.isArray(data.skills)) {
         throw new Error(JOB_MESSAGES.SKILLS_NOT_ARRAY);
     }
@@ -20,15 +28,15 @@ function validateBusinessRules(data) {
         throw new Error(JOB_MESSAGES.INVALID_BUDGET_TYPE);
     }
 
-    if (!data.budget_amount || data.budget_amount < 1) {
+    if (!data.budget_amount || Number(data.budget_amount) < 1) {
         throw new Error(JOB_MESSAGES.INVALID_BUDGET_AMOUNT);
     }
 
-    if (data.budget_type === "hourly" && data.budget_amount < 5) {
+    if (data.budget_type === "hourly" && Number(data.budget_amount) < 5) {
         throw new Error(JOB_MESSAGES.HOURLY_MINIMUM);
     }
 
-    if (data.budget_type === "monthly" && data.budget_amount < 300) {
+    if (data.budget_type === "monthly" && Number(data.budget_amount) < 300) {
         throw new Error(JOB_MESSAGES.MONTHLY_MINIMUM);
     }
 
@@ -37,7 +45,7 @@ function validateBusinessRules(data) {
         throw new Error(JOB_MESSAGES.INVALID_PROJECT_SIZE);
     }
 
-    if (data.project_size === "large" && data.duration === "1_2_days") {
+    if (data.project_size.toLowerCase() === "large" && data.duration === "1_2_days") {
         throw new Error(JOB_MESSAGES.LARGE_PROJECT_SHORT_DURATION);
     }
 
@@ -171,7 +179,6 @@ async function updateJob(jobId, userId, payload) {
 
 async function getAllJobs(page = 1, limit = 10, filters = {}) {
     const offset = (page - 1) * limit;
-
     const where = {};
 
     if (filters.skills) {
@@ -186,7 +193,7 @@ async function getAllJobs(page = 1, limit = 10, filters = {}) {
         where.experience_level = filters.experience_level;
     }
 
-    const { rows: jobs, count: total } = await Job.findAndCountAll({
+    const { rows, count: total } = await Job.findAndCountAll({
         where,
         limit,
         offset,
@@ -200,6 +207,28 @@ async function getAllJobs(page = 1, limit = 10, filters = {}) {
         ]
     });
 
+    const jobs = rows.map(job => {
+        let parsedSkills = [];
+
+        if (Array.isArray(job.skills)) {
+            parsedSkills = job.skills.map(skill => {
+                if (typeof skill === "string") {
+                    try {
+                        return JSON.parse(skill);
+                    } catch {
+                        return { name: skill };
+                    }
+                }
+                return skill;
+            });
+        }
+
+        return {
+            ...job.toJSON(),
+            skills: parsedSkills
+        };
+    });
+
     return {
         page,
         limit,
@@ -208,6 +237,7 @@ async function getAllJobs(page = 1, limit = 10, filters = {}) {
         jobs
     };
 }
+
 
 module.exports = {
     createJob,
