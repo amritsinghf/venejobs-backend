@@ -19,7 +19,6 @@ const authenticateToken = async (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // 🔥 FIX HERE
     const userId = decoded.id || decoded.userId?.id;
 
     if (!userId) {

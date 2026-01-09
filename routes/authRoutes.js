@@ -6,11 +6,12 @@ const authController = require('../controllers/authController');
 const { authenticateToken } = require('../middleware/auth');
 const { validateSignup, validateUpdateProfile, validateLogin, validateResetPassword } = require('../validators/auth.validator');
 const { profileUpload } = require('../utils/uploads/profileUpload');
+const sanitizeUser = require('../middleware/sanitizeUser');
 
 router.post('/signup', validateSignup, authController.signup);
 router.post('/login', validateLogin, authController.login);
 router.put('/profile', authenticateToken, validateUpdateProfile, authController.updateProfile);
-router.get('/profile', authenticateToken, authController.getProfile);
+router.get('/profile', authenticateToken, sanitizeUser, authController.getProfile);
 router.post("/profile-picture", authenticateToken, profileUpload.single("profile_picture"), authController.updateProfilePicture);
 router.post('/verify-email', authController.verifyEmail);
 router.post('/resend-verification', authController.resendVerification);
