@@ -44,7 +44,8 @@ const validateLogin = [
   body('email')
     .trim()
     .normalizeEmail({
-      gmail_remove_dots:false
+      gmail_remove_dots: false,
+      gmail_remove_subaddress: false
     })
     .isEmail()
     .withMessage('Please enter a valid email address.'),
@@ -55,6 +56,7 @@ const validateLogin = [
 
   handleValidation
 ];
+
 
 /* ====================== RESET PASSWORD ====================== */
 
