@@ -8,7 +8,7 @@ router.post("/profile", authenticateToken, validateFreelancerProfile, adminOrFre
 
 router.get("/profile", authenticateToken, adminOrFreelancer, FreelancerController.getProfile);
 
-router.post("/profile/basic", authenticateToken, adminOrFreelancer, FreelancerController.updateProfile);
+router.patch("/profile/basic", authenticateToken, adminOrFreelancer, FreelancerController.updateProfile);
 router.get("/profile/basic", authenticateToken, adminOrFreelancer, FreelancerController.getBasicProfile);
 
 router.post("/skill", authenticateToken, adminOrFreelancer, FreelancerController.createSkill);

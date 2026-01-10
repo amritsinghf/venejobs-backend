@@ -186,6 +186,7 @@ const saveFreelancerProfile = async (userId, payload) => {
 const updateBasicProfile = async (userId, payload) => {
   return sequelize.transaction(async (transaction) => {
 
+    // -------- USER TABLE UPDATE --------
     const userFields = [
       "phone",
       "profile_picture",
@@ -212,12 +213,17 @@ const updateBasicProfile = async (userId, payload) => {
       });
     }
 
+    // -------- PROFILE TABLE --------
     const profile = await FreelancerProfile.findOne({
       where: { user_id: userId },
       transaction
     });
 
-    if (!profile) throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+    if (!profile) {
+      const err = new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+      err.statusCode = 404;
+      throw err;
+    }
 
     const profileFields = ["professional_title", "overview", "hourly_rate"];
     const profileUpdate = {};
@@ -232,9 +238,33 @@ const updateBasicProfile = async (userId, payload) => {
       await profile.update(profileUpdate, { transaction });
     }
 
-    return true;
+    // 🔥 Fresh updated data fetch (BEST PRACTICE)
+    const updatedProfile = await FreelancerProfile.findOne({
+      where: { user_id: userId },
+      include: [
+        {
+          model: User,
+          attributes: [
+            "id",
+            "phone",
+            "profile_picture",
+            "date_of_birth",
+            "street_address",
+            "apt_suite",
+            "city",
+            "state",
+            "zip_code",
+            "country"
+          ]
+        }
+      ],
+      transaction
+    });
+
+    return updatedProfile;
   });
 };
+
 
 const createSkill = async (userId, data) => {
   return sequelize.transaction(async (transaction) => {
@@ -270,6 +300,7 @@ const createSkill = async (userId, data) => {
 };
 
 const updateSkill = async (userId, skillId, data) => {
+  console.log()
   return sequelize.transaction(async (transaction) => {
     const profile = await FreelancerProfile.findOne({
       where: { user_id: userId },
@@ -296,15 +327,18 @@ const updateSkill = async (userId, skillId, data) => {
       throw err;
     }
 
-    await skill.update(
+    const updatedSkill = await skill.update(
       {
         skill_name: data.skill_name,
         level: data.level || null
       },
       { transaction }
     );
+
+    return updatedSkill;
   });
 };
+
 
 const deleteSkill = async (userId, skillId) => {
   return sequelize.transaction(async (transaction) => {
@@ -408,7 +442,11 @@ const updateExperience = async (userId, experienceId, data) => {
       transaction
     });
 
-    if (!profile) throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+    if (!profile) {
+      const err = new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+      err.statusCode = 404;
+      throw err;
+    }
 
     const experience = await FreelancerExperience.findOne({
       where: {
@@ -418,9 +456,13 @@ const updateExperience = async (userId, experienceId, data) => {
       transaction
     });
 
-    if (!experience) throw new Error("Experience not found");
+    if (!experience) {
+      const err = new Error("Experience not found");
+      err.statusCode = 404;
+      throw err;
+    }
 
-    await experience.update(
+    const updatedExperience = await experience.update(
       {
         job_title: data.job_title,
         company: data.company,
@@ -435,6 +477,8 @@ const updateExperience = async (userId, experienceId, data) => {
       },
       { transaction }
     );
+
+    return updatedExperience;
   });
 };
 
@@ -531,7 +575,11 @@ const updateEducation = async (userId, educationId, data) => {
       transaction
     });
 
-    if (!profile) throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+    if (!profile) {
+      const err = new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+      err.statusCode = 404;
+      throw err;
+    }
 
     const education = await FreelancerEducation.findOne({
       where: {
@@ -541,9 +589,13 @@ const updateEducation = async (userId, educationId, data) => {
       transaction
     });
 
-    if (!education) throw new Error("Education not found");
+    if (!education) {
+      const err = new Error("Education not found");
+      err.statusCode = 404;
+      throw err;
+    }
 
-    await education.update(
+    const updatedEducation = await education.update(
       {
         institution_name: data.institution_name,
         degree: data.degree,
@@ -555,6 +607,8 @@ const updateEducation = async (userId, educationId, data) => {
       },
       { transaction }
     );
+
+    return updatedEducation;
   });
 };
 
@@ -639,7 +693,12 @@ const updateLanguage = async (userId, languageId, data) => {
       where: { user_id: userId },
       transaction
     });
-    if (!profile) throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+
+    if (!profile) {
+      const err = new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+      err.statusCode = 404;
+      throw err;
+    }
 
     const language = await FreelancerLanguage.findOne({
       where: {
@@ -648,17 +707,25 @@ const updateLanguage = async (userId, languageId, data) => {
       },
       transaction
     });
-    if (!language) throw new Error("Language not found");
 
-    await language.update(
+    if (!language) {
+      const err = new Error("Language not found");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const updatedLanguage = await language.update(
       {
         language: data.language,
         proficiency: data.proficiency
       },
       { transaction }
     );
+
+    return updatedLanguage;
   });
 };
+
 
 const deleteLanguage = async (userId, languageId) => {
   return sequelize.transaction(async (transaction) => {
@@ -743,7 +810,11 @@ const updatePortfolio = async (userId, portfolioId, data) => {
       transaction
     });
 
-    if (!profile) throw new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+    if (!profile) {
+      const err = new Error(freelancerProfileMessages.PROFILE_NOT_FOUND);
+      err.statusCode = 404;
+      throw err;
+    }
 
     const portfolio = await FreelancerPortfolio.findOne({
       where: {
@@ -753,9 +824,13 @@ const updatePortfolio = async (userId, portfolioId, data) => {
       transaction
     });
 
-    if (!portfolio) throw new Error("Portfolio not found");
+    if (!portfolio) {
+      const err = new Error("Portfolio not found");
+      err.statusCode = 404;
+      throw err;
+    }
 
-    await portfolio.update(
+    const updatedPortfolio = await portfolio.update(
       {
         title: data.title,
         description: data.description,
@@ -763,8 +838,11 @@ const updatePortfolio = async (userId, portfolioId, data) => {
       },
       { transaction }
     );
+
+    return updatedPortfolio;
   });
 };
+
 
 const deletePortfolio = async (userId, portfolioId) => {
   return sequelize.transaction(async (transaction) => {
