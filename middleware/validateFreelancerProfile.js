@@ -3,7 +3,6 @@ module.exports = (req, res, next) => {
 
     const requiredRootFields = [
         "professional_title",
-        "overview",
         "hourly_rate",
         "date_of_birth",
         "street_address",

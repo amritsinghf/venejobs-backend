@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
 
             overview: {
                 type: DataTypes.TEXT,
-                allowNull: false
+                allowNull: true
             },
 
             hourly_rate: {
