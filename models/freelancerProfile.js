@@ -21,17 +21,17 @@ module.exports = (sequelize, DataTypes) => {
 
             hourly_rate: {
                 type: DataTypes.FLOAT,
-                allowNull: false
+                allowNull: true
             },
 
             country: {
                 type: DataTypes.STRING,
-                allowNull: false
+                allowNull: true
             },
 
             city: {
                 type: DataTypes.STRING,
-                allowNull: false
+                allowNull: true
             },
 
             profile_completed: {

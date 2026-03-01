@@ -34,17 +34,17 @@ module.exports = {
 
       hourly_rate: {
         type: Sequelize.FLOAT,
-        allowNull: false
+        allowNull: true
       },
 
       country: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
       },
 
       city: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
       },
 
       profile_completed: {

@@ -32,11 +32,21 @@ const saveFreelancerProfile = async (userId, payload) => {
     // =========================
     // USER
     // =========================
+    let dob = null;
+
+    if (payload.date_of_birth) {
+      const parsedDate = new Date(payload.date_of_birth);
+
+      if (!isNaN(parsedDate.getTime())) {
+        dob = parsedDate;
+      }
+    }
+
     await User.update(
       {
         phone: payload.phone,
         profile_picture: payload.profile_picture,
-        date_of_birth: payload.date_of_birth,
+        date_of_birth: dob,
         street_address: payload.street_address,
         apt_suite: payload.apt_suite,
         city: payload.city,
