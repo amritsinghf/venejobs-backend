@@ -31,7 +31,6 @@ const PORT = config.app.port;
 /* =====================================================
    CORS CONFIG (EXPRESS 5 – FINAL & SAFE)
 ===================================================== */
-
 const allowedOrigins = [
   "https://venejob.com",
   "https://www.venejob.com",
@@ -45,30 +44,30 @@ app.use(helmet());
 app.use(
   cors({
     origin: (origin, callback) => {
-      // allow server-to-server, Postman, curl
-      if (!origin) {
-        return callback(null, true);
-      }
 
-      // allow exact whitelisted origins
+      // allow Postman / server-to-server
+      if (!origin) return callback(null, true);
+
+      // exact domains
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
-      // allow ALL Vercel deployments
-      if (origin.endsWith(".vercel.app")) {
+      // allow all vercel previews
+      if (typeof origin === "string" && origin.endsWith(".vercel.app")) {
         return callback(null, true);
       }
 
-      // silently block others (NO ERROR)
       return callback(null, false);
     },
+
     credentials: true,
+
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-
 
 /* =====================================================
    MIDDLEWARES
